@@ -39,7 +39,7 @@ The information will initially come from Wikipedia and later from some databases
 | Character analysis | ![Progress](http://progressed.io/bar/0) |
 | Adaptation to human learning patterns | ![Progress](http://progressed.io/bar/0) |
 | Generating a purpose | ![Progress](http://progressed.io/bar/0) |
-| Gender classification | ![Progress](http://progressed.io/bar/0) |
+| Gender assumption | ![Progress](http://progressed.io/bar/0) |
 | Age classification | ![Progress](http://progressed.io/bar/0) |
 | Introspection stimulation | ![Progress](http://progressed.io/bar/0) |
 | Story generation | ![Progress](http://progressed.io/bar/0) |
