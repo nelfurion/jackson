@@ -1,7 +1,9 @@
+import sys
+sys.path.append('../')
 from decorators.abstract_method import abstract_method
 
 class DataService:
-    'Abstract. Extract data from a database.''
+    'Abstract. Extract data from a database.'
 
     @abstract_method
     def get(self, name):
