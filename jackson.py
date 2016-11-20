@@ -7,8 +7,13 @@ from whitespace_tokenizer import WhiteSpaceTokenizer
 
 from config import config
 
-text_processor = TextProcessor(WhiteSpaceTokenizer(), SnowballStemmer(), joblib.load(config['vectorizer']))
-jackson = Chatbot(text_processor, joblib.load(config['question_classifier']))
+text_processor = TextProcessor(
+    WhiteSpaceTokenizer(), SnowballStemmer(),
+    joblib.load(config['vectorizer']))
+
+jackson = Chatbot(
+    text_processor,
+    joblib.load(config['question_classifier']))
 
 while True:
     user_input = input()
