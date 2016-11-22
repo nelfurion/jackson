@@ -30,7 +30,6 @@ class Summarizer(object):
             frequency = appearances[word] / max_appearances
             if frequency <= self.max_freq and frequency >= self.min_freq:
                 frequencies[word] = frequency
-                print(frequency)
 
         return self._get_sentences(n, tokenized_sentences, frequencies)
 
@@ -44,8 +43,7 @@ class Summarizer(object):
 
             sentence_scores.append((tokenized_sentences[i], i, score))
 
-        sentence_scores = list(reversed(sorted(sentence_scores, key=lambda x: x[2])))
+        sentence_scores = sorted(sentence_scores, key=lambda x: x[2])
+        ordered_sentences = sorted(sentence_scores[-n:], key=lambda x: x[1])
 
-        print(sentence_scores)
-
-        return [x[0] for x in sentence_scores[:n]]
+        return [x[0] for x in ordered_sentences]
