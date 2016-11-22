@@ -1,5 +1,6 @@
-from interfaces.stemmer import Stemmer
 import nltk.stem.snowball
+
+from stemmer import Stemmer
 
 class SnowballStemmer(Stemmer):
     """Uses default nltk SnowballStemmer."""
