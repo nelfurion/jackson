@@ -16,6 +16,13 @@ To install them, simply run:
 cat requirements.txt | xargs pip install
 ```
 
+To start the chatbot run:
+
+```
+cd ./jackson
+python jackson.py
+```
+
 To download the train and test data, run:
 
 ```
