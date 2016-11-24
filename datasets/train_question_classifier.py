@@ -50,14 +50,32 @@ def encode_data(train_file, test_file):
     train_features = vectorizer.fit_transform(train_features).toarray()
     test_features = vectorizer.transform(test_features).toarray()
 
+    joblib.dump(vectorizer, '../models/vectorizers/TfidfVectorizer.pkl')
+
     selector = SelectPercentile(f_classif, percentile=100)
     train_features = selector.fit_transform(train_features, train_labels)
     test_features = selector.transform(test_features)
 
-    joblib.dump(vectorizer, 'vectorizer.pkl')
-    return numpy.array(train_features), numpy.array(train_labels), numpy.array(train_sublabels), numpy.array(test_features), numpy.array(test_labels), numpy.array(test_file)
+    train_features = numpy.array(train_features)
+    train_labels = numpy.array(train_labels)
+    train_sublabels = numpy.array(train_sublabels)
+    test_features = numpy.array(test_features)
+    test_labels = numpy.array(test_labels)
+    test_file = numpy.array(test_file)
 
-train_features, train_labels, train_sublabels, test_features, test_labels, test_sublabels = encode_data('../questions.txt', '../test_questions.txt')
+    return train_features, \
+        train_labels, \
+        train_sublabels, \
+        test_features, \
+        test_labels, \
+        test_file
+
+train_features, \
+train_labels, \
+train_sublabels, \
+test_features, \
+test_labels, \
+test_sublabels = encode_data('./questions_train.txt', './questions_test.txt')
 
 classifier = GaussianNB()
 classifier.fit(train_features, train_labels)
@@ -72,4 +90,4 @@ accuracy = correct_count / len(predictions)
 
 print("accuracy: ", accuracy)
 
-joblib.dump(classifier, './classifiers/question_naive_bayes_no_params_' + str(accuracy) + '.pkl')
+joblib.dump(classifier, '../models/classifiers/question_naive_bayes_no_params_' + str(accuracy) + '.pkl')
