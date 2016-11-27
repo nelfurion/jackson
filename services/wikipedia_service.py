@@ -1,7 +1,7 @@
 import json
 
 from urllib.request import urlopen
-from data_service import DataService
+from services.data_service import DataService
 
 class WikipediaService(DataService):
     'A data service class for wikipedia.'
@@ -11,10 +11,10 @@ class WikipediaService(DataService):
     def __init__(self):
         pass
 
-    def get(self, name):
+    def get(self, name, part='intro'):
         'Returns a document whose name matches the given.'
 
-        requestUrl = self.create_request({
+        request_url = self.create_request({
             'action': 'query',
             'titles': name,
             'prop': 'extracts',
@@ -23,40 +23,49 @@ class WikipediaService(DataService):
             'format': self.FORMAT
         })
 
-        response = urlopen(requestUrl).read()
+        #if a part of the page is not specified, return the intro
+        if part == 'intro':
+            request_url += '&exintro'
+
+        response = urlopen(request_url).read()
         response = response.decode('utf8')
         pages = json.loads(response)['query']['pages']
 
-        print('Finished request: ', requestUrl, '...')
+        print('Finished request: ', request_url, '...')
 
         return pages[list(pages)[0]]['extract']
 
     def search(self, name):
         'Searches for documents with the given name.'
 
-        requestUrl = self.create_request({
+        request_url = self.create_request({
             'action': 'opensearch',
             'search': name,
             'limit': 10,
             'format': self.FORMAT
         })
 
-        response = urlopen(requestUrl).read()
+        response = urlopen(request_url).read()
         response = response.decode('utf8')
 
-        print('Finished request: ', requestUrl, '...')
+        print('Finished request: ', request_url, '...')
 
         return json.loads(response)
 
+    def find(self, name):
+        search_result = self.search(name)
+        page_name = search_result[1][0]
+        return self.get(page_name)
+
     def create_request(self, params):
-        requestUrl = self.ENDPOINT
+        request_url = self.ENDPOINT
         for key, value in params.items():
-            requestUrl += '&' + key
+            request_url += '&' + key
 
             if type(value) == str:
                 value = value.replace(' ', '%20')
 
             if value is not None:
-                requestUrl += '=' + str(value)
+                request_url += '=' + str(value)
 
-        return requestUrl
+        return request_url
