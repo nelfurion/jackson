@@ -5,7 +5,8 @@ Jackson requires several packages to run:
 scikit-learn>=0.17.1
 numpy>=1.11.1
 scipy>=0.17.1
-nltk>=3.2.1
+nltk>=3.2.1,
+clint=0.5.1
 ```
 
 You can install them from 'requirements.txt' with your
@@ -71,8 +72,6 @@ Jackson is separated into 3 parts.
 
 3) Searching and extracting information based on the query
 
-__Currently Jackson is around 10% implemented.__
-
 ## 1. Input(Question) Classification
 ![Progress](http://progressed.io/bar/33)
 
@@ -87,7 +86,7 @@ Currently Jackson can extract Named Entities from the text and search informatio
 
 After the contents of a page(the information for a Named Entity) is received, it is summarized and shown to the user.
 
-## Possible features that will eventually be implemented
+## Features that will eventually be implemented
 
 | Features      | Implementation|
 | ------------- |:-------------:|
