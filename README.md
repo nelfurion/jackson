@@ -1,5 +1,3 @@
-Progress (roughly estimated): ![Progress](http://progressed.io/bar/10)
-
 # Usage
 Jackson requires several packages to run:
 
@@ -10,10 +8,14 @@ scipy>=0.17.1
 nltk>=3.2.1
 ```
 
-To install them, simply run:
+You can install them from 'requirements.txt' with your
+preferred package manager.
+
+Example:
 
 ```
-cat requirements.txt | xargs pip install
+PIP: pip install -r './requirements.txt'
+CONDA: conda install --file './requirements.txt'
 ```
 
 To start the chatbot run:
@@ -65,11 +67,11 @@ The classifier works with 33.2% accuracy. It is going to be improved in the futu
 
 ## 2. Building query
 
-The query will most likely be based on some key words extracted through nlp from the question.
+Currently Jackson can extract Named Entities from the text and search information for them from Wikipedia.
 
 ## 3. Information retrieval
 
-The information will initially come from Wikipedia and later from some databases also.
+After the contents of a page(the information for a Named Entity) is received, it is summarized and shown to the user.
 
 ## Possible features that will eventually be implemented
 
