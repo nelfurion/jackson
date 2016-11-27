@@ -18,6 +18,22 @@ PIP: pip install -r './requirements.txt'
 CONDA: conda install --file './requirements.txt'
 ```
 
+You also have to install several nltk packages, found in nltk_requirements.txt:
+```
+punkt
+averaged_perceptron
+maxent_ne_chunker
+words
+stopwords
+```
+
+They can be installed from the command line like so:
+```
+python
+>>> import nltk
+>>> nltk.download('package_name')
+```
+
 To start the chatbot run:
 
 ```
@@ -32,9 +48,7 @@ cd ./datasets
 sh generate_data.sh
 ```
 
-If you want to train your own classifier, you also have to download the nltk data as described here [nltk guide](http://www.nltk.org/data.html).
-
-After that run:
+To train the questions classifier run:
 
 ```
 cd ./datasets
