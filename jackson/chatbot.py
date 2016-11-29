@@ -18,8 +18,9 @@ class Chatbot:
         self.last_utterance = utterance
 
     def answer(self):
-        #features = self.text_processor.vectorize(self.last_utterance)
-        #topic = self.question_classifier.predict(features)
+        features = self.text_processor.vectorize(self.last_utterance)
+        topic = self.question_classifier.predict(features)
+        print('[', topic, ']')
 
         #if topic is HUM
         entities_info = []

@@ -2,73 +2,37 @@
 TODO:
 There are a number of wrong thing in this file...
 '''
-
-import nltk
-
 import numpy
 
-from nltk.stem.snowball import SnowballStemmer
-from nltk.corpus import stopwords
-from sklearn.naive_bayes import GaussianNB
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_selection import SelectPercentile, f_classif
+from encode import encode_data
+from encode import parse_data
+
+#Importing classifiers
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+from sklearn.model_selection import GridSearchCV
 from sklearn.externals import joblib
 
-def parse_data(file, stemmer=SnowballStemmer("english")):
-    features = []
-    labels = []
-    sublabels = []
+def calculate_accuracy(predictions, test_labels):
+    correct_count = 0
+    for i in range(len(predictions)):
+        if predictions[i] == test_labels[i]:
+            correct_count += 1
 
-    with open(file) as f:
-        content = f.readlines()
-        for line in content:
-            parts = line.split(' ', 1)
-            question = parts[1]
-            question_types = parts[0].split(':')
-            main_type = question_types[0]
-            subtype = question_types[1]
+    return correct_count / len(predictions)
 
-            words = [word for word in question.split(' ') if word not in stopwords.words('english')]
-            for i in range(len(words)):
-                words[i] = stemmer.stem(words[i])
+def save_classifier(classifier_name, parameters, accuracy):
+    file_name = 'q_clf_' + classifier_name + '_'
+    for key, value in parameters.items():
+        file_name += str(key) + '='
+        file_name += str(value) + '_'
 
-            question = ' '.join(words)
+    file_name += 'accuracy=' + str(accuracy)
+    file_name += '.pkl'
 
-            labels.append(main_type)
-            sublabels.append(subtype)
-            features.append(question)
-
-    return features, labels, sublabels
-
-def encode_data(train_file, test_file):
-    train_features, train_labels, train_sublabels = parse_data(train_file)
-    test_features, test_labels, test_sublabels = parse_data(test_file)
-
-    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
-                                 stop_words='english')
-
-    train_features = vectorizer.fit_transform(train_features).toarray()
-    test_features = vectorizer.transform(test_features).toarray()
-
-    joblib.dump(vectorizer, '../models/vectorizers/TfidfVectorizer.pkl')
-
-    selector = SelectPercentile(f_classif, percentile=100)
-    train_features = selector.fit_transform(train_features, train_labels)
-    test_features = selector.transform(test_features)
-
-    train_features = numpy.array(train_features)
-    train_labels = numpy.array(train_labels)
-    train_sublabels = numpy.array(train_sublabels)
-    test_features = numpy.array(test_features)
-    test_labels = numpy.array(test_labels)
-    test_file = numpy.array(test_file)
-
-    return train_features, \
-        train_labels, \
-        train_sublabels, \
-        test_features, \
-        test_labels, \
-        test_file
+    joblib.dump(classifier, '../models/classifiers/' + file_name)
 
 train_features, \
 train_labels, \
@@ -77,17 +41,27 @@ test_features, \
 test_labels, \
 test_sublabels = encode_data('./questions_train.txt', './questions_test.txt')
 
-classifier = GaussianNB()
-classifier.fit(train_features, train_labels)
-predictions = classifier.predict(test_features)
+models = [
+    MultinomialNB()
+]
 
-correct_count = 0
-for i in range(len(predictions)):
-    if predictions[i] == test_labels[i]:
-        correct_count += 1
+parameters = [{
+        'alpha': numpy.arange(0, 1.1, 0.1)
+}]
 
-accuracy = correct_count / len(predictions)
+for i, model in enumerate(models):
+    print('='*30)
+    classifier = GridSearchCV(model, parameters[i])
+    print('Training ', model.__class__.__name__, '...')
+    classifier.fit(train_features, train_labels)
+    print('Training finished...')
 
-print("accuracy: ", accuracy)
+    print('Predicting with ', model.__class__.__name__, '...')
+    predictions = classifier.predict(test_features)
+    print('Predictiion finished...')
 
-joblib.dump(classifier, '../models/classifiers/question_naive_bayes_no_params_' + str(accuracy) + '.pkl')
+    accuracy = calculate_accuracy(predictions, test_labels)
+    print(model.__class__.__name__, ' accuracy: ', accuracy)
+    print('='*30)
+
+    save_classifier(model.__class__.__name__, classifier.best_params_, accuracy)

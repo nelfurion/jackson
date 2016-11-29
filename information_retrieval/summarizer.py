@@ -27,7 +27,7 @@ class Summarizer(object):
                     appearances[word] += 1
                 else:
                     appearances[word] = 1
-
+                    
         max_appearances = appearances[max(appearances, key=lambda k: appearances[k])]
 
         frequencies = {}
