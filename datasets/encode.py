@@ -11,44 +11,22 @@ from sklearn.feature_selection import SelectPercentile, f_classif
 
 VECTORIZERS_FOLDER = '../models/vectorizers/'
 
-def encode_data(train_file, test_file, vectorizer_file=None):
-    train_features, train_labels, train_sublabels = parse_data(train_file)
-    test_features, test_labels, test_sublabels = parse_data(test_file)
+def encode_data(file, vectorizer):
+    features, labels, sublabels = parse_data(file)
+    features = vectorizer.transform(features).toarray()
 
-    vectorizer = load_or_train_vectorizer(vectorizer_file, train_features)
+    return (features, labels, sublabels)
 
-    train_features = vectorizer.transform(train_features).toarray()
-    test_features = vectorizer.transform(test_features).toarray()
-
-    selector = SelectPercentile(f_classif, percentile=100)
-    train_features = selector.fit_transform(train_features, train_labels)
-    test_features = selector.transform(test_features)
-
-    train_features = numpy.array(train_features)
-    train_labels = numpy.array(train_labels)
-    train_sublabels = numpy.array(train_sublabels)
-    test_features = numpy.array(test_features)
-    test_labels = numpy.array(test_labels)
-    test_file = numpy.array(test_file)
-
-    return train_features, \
-        train_labels, \
-        train_sublabels, \
-        test_features, \
-        test_labels, \
-        test_file
-
-def load_or_train_vectorizer(file = None, train_features = None):
-    if file:
-        return joblib.load(file)
+def load_or_train_vectorizer(vectorizer = None, train_features = None):
+    if type(vectorizer) is str:
+        return joblib.load(vectorizer)
 
     return train_vectorizer(train_features)
 
 def train_vectorizer(train_features):
     vectorizer = TfidfVectorizer(
-        sublinear_tf=True,
-        max_df=0.5,
-        stop_words='english')
+        analyzer='word',
+        ngram_range=(1, 3))
 
     vectorizer.fit(train_features)
 
@@ -83,3 +61,11 @@ def parse_data(file, stemmer=SnowballStemmer("english")):
             features.append(question)
 
     return features, labels, sublabels
+
+def get_vectorizer_weights(vectorizer, features):
+    weights = dict(zip(vectorizer.get_feature_names(), features.data))
+    return weights
+
+def print_to_file(text, action):
+    with open("output.txt", action) as myfile:
+        myfile.write(str(text))
