@@ -2,7 +2,9 @@
     var CHAT_ENDPOINT = '/chatbot/chat/',
         sendButton = $('#chat_btn_send'),
         chatLogContainer = $('#chat_chat_log'),
-        inputField = $('#chat_user_input');
+        inputField = $('#chat_user_input'),
+        userInput = $('<div class="user_input"></div>'),
+        chatbotOutput = $('<div class="chatbot_output"></div>');
 
     function getCookie(name) {
         var cookieValue = null;
@@ -27,18 +29,21 @@
         event.preventDefault();
 
         var user_input = inputField.val();
-        chatLogContainer.append('YOU: ' + user_input + '<br />');
+        var newUserInput = userInput.clone().text(user_input);
+        chatLogContainer.append(newUserInput);
 
         $.ajax({
             url: CHAT_ENDPOINT,
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
-                user_input: user_input
+                user_input: user_input,
             })
         })
         .done(function(result) {
-            chatLogContainer.append('Jackson: ' + result.answer + '<br />');
+            console.log(result);
+            var newOutput = chatbotOutput.clone().text(result.answer);
+            chatLogContainer.append(newOutput);
         });
     });
 

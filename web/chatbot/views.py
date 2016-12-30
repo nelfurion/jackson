@@ -1,7 +1,11 @@
-from django.shortcuts import render
+import json
+import sys
+sys.path.append('../')
 
-from django.http import HttpResponse
+from jackson import jackson
+
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views import View
 
 def index(request):
@@ -17,4 +21,13 @@ class ChatView(View):
         return render(request, 'chatbot/chat.html')
 
     def post(self, request):
-        return JsonResponse({'asd':'a'})
+        body_data = json.loads(request.body.decode(encoding='UTF-8'))
+        user_input = body_data['user_input']
+        jackson.jackson.read(user_input)
+        return JsonResponse({
+            'answer': jackson.jackson.answer()
+        })
+
+class LogsView(View):
+    def get(self, request):
+        return render(request, 'chatbot/logs.html')

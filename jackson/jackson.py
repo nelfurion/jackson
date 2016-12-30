@@ -9,10 +9,10 @@ from information_retrieval.summarizer import Summarizer
 from services.wikipedia_service import WikipediaService
 from preprocess.whitespace_tokenizer import WhiteSpaceTokenizer
 from preprocess.snowball_stemmer import SnowballStemmer
-from text_processor import TextProcessor
-from chatbot import Chatbot
+from .text_processor import TextProcessor
+from .chatbot import Chatbot
 
-from config import config
+from .config import config
 
 text_processor = TextProcessor(
     WhiteSpaceTokenizer(),
@@ -24,12 +24,3 @@ jackson = Chatbot(
     joblib.load(config['question_classifier']),
     WikipediaService(),
     Summarizer())
-
-def answer(question):
-    jackson.read(question)
-    return jackson.answer()
-
-while True:
-    user_input = input()
-    jackson.read(user_input)
-    print(colored.green(jackson.answer()))

@@ -1,5 +1,7 @@
 import string
 import re
+import sys
+sys.path.append('../')
 
 from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
 
