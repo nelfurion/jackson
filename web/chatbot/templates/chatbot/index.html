@@ -1,0 +1,13 @@
+{% extends 'chatbot/base.html' %}
+{% block content %}
+    <div class="row">
+        <div class="well well-lg col-md-3 col-md-offset-2">
+            Chats Count:
+            {{statistics.chats_count}}
+        </div>
+        <div class="well well-lg col-md-3 col-md-offset-2">
+            Chat Logs Count:
+            {{statistics.chat_logs_count}}
+        </div>
+    </div>
+{% endblock %}

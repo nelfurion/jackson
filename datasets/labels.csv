@@ -1,0 +1,6 @@
+DESC,manner,def,reason,desc
+ENTY,cremat,animal,event,other,letter,religion,food,color,termeq,body,dismed,cremat,product,substance,sport,plant,techmeth,instru,word,lang,symbol,veh,currency
+ABBR,exp,abb
+HUM,ind,gr,title,desc
+NUM,date,count,money,period,volsize,other,speed,perc,code,dist,temp,ord,weight
+LOC,state,other,country,city,mount

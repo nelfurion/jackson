@@ -25,6 +25,10 @@ jackson = Chatbot(
     WikipediaService(),
     Summarizer())
 
+def answer(question):
+    jackson.read(question)
+    return jackson.answer()
+
 while True:
     user_input = input()
     jackson.read(user_input)

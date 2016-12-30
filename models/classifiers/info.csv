@@ -1,0 +1,15 @@
+Classifier,Vectorizer,Features,
+MultinomialNB_accuracy=0.666,"CountVectorizer_DEFAULT_analyzer='char_wb'_ngrams=(1,3)_min_df=1",[words],
+q_clf_MultinomialNB_alpha=0.5_accuracy=0.696,"CountVectorizer_DEFAULT_analyzer='char'-ngrams=(1, 3)_min_df=1",[words],
+MultinomialNB_alfa=4.5_accuracy=0.6,"CountVectorizer_DEFAULT_analyzer='word'_ngrams=(1, 3)_min_df=1",[words],
+q_clf_MultinomialNB_alpha=0.2_accuracy=0.678,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)",[words],
+q_clf_DecisionTreeClassifier_class_weight=None_splitter=random_accuracy=0.704,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)",[words],
+q_clf_GaussianNB_accuracy=0.464,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)",[words],
+q_clf_GaussianNB_accuracy=0.492,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Features are [words] + [positions],
+q_clf_MultinomialNB_alpha=0.1_accuracy=0.65,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Features are [words] + [positions],
+q_clf_DecisionTreeClassifier_max_depth=None_max_features=None_splitter=random_criterion=gini_class_weight=balanced_accuracy=0.74,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Features are [words] + [positions],
+q_clf_MultinomialNB_alpha=1.0_accuracy=0.552,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Only pos tags as strings,
+q_clf_MultinomialNB_alpha=0.7_accuracy=0.666,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Pos tags + the first word from the sentence, From this we can Infer that most of the other words are irrelevant. The accuracy is almost the same.
+q_clf_MultinomialNB_alpha=0.1_accuracy=0.666,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Pos tags + the first word from the sentence + ne_chunks labels, MUST TEST WITH BINARY VECTORIZER OR COUNTER
+q_clf_MultinomialNB_alpha=0.5_accuracy=0.672,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Pos tags + the first word from the sentence + ne_chunks labels(binary), MUST TEST WITH BINARY VECTORIZER OR COUNTER
+q_clf_DecisionTreeClassifier_accuracy=0.622,"TfidfVectorizer_analyzer='word'_ngram_range=(1,3)", Pos tags + the first word from the sentence + ne_chunks labels(binary),

@@ -15,6 +15,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn.model_selection import GridSearchCV
 from sklearn.externals import joblib
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 def calculate_accuracy(predictions, test_labels):
     correct_count = 0
@@ -36,16 +37,20 @@ def save_classifier(classifier_name, accuracy, parameters = None):
 
     joblib.dump(classifier, '../models/classifiers/' + file_name)
 
-vectorizer = joblib.load('../models/vectorizers/TfidfVectorizer.pkl')
+encoded_train_data = encode.encode_data(encode.parse_data('./questions_train.txt'))
+encoded_test_data = encode.encode_data(encode.parse_data('./questions_test.txt'))
 
-train_features, train_labels, train_sublabels = encode.encode_data(
-    './questions_train.txt',
-    vectorizer)
+vectorizer = encode.load_or_train_vectorizer(
+    vectorizer = TfidfVectorizer(
+        ngram_range = (1, 3),
+        analyzer = 'word'),
+    train_features = encoded_train_data['features'],
+    save_file_name = 'MultinomialNBVectorizer')
 
+train_features, train_labels, train_sublabels = encode.transform_data(encoded_train_data, vectorizer)
+test_features, test_labels, test_sublabels = encode.transform_data(encoded_test_data, vectorizer)
 
-test_features, test_labels, test_sublabels = encode.encode_data(
-    './questions_test.txt',
-    vectorizer)
+print(train_features)
 
 for i, model in enumerate(config['models']):
     print('='*30)
@@ -65,7 +70,9 @@ for i, model in enumerate(config['models']):
     print('Predictiion finished...')
 
     accuracy = calculate_accuracy(predictions, test_labels)
+    accuracy_train = calculate_accuracy(predictions, train_labels)
     print(model.__class__.__name__, ' accuracy: ', accuracy)
+    print(model.__class__.__name__, ' accuracy_train: ', accuracy_train)
     print('='*30)
 
     if hasattr(classifier, 'best_params_'):

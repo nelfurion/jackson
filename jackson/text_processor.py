@@ -6,8 +6,11 @@ class TextProcessor:
         self.stemmer = stemmer
         self.vectorizer = vectorizer
 
+    def tokenize(self, utterance):
+        return self.tokenizer.tokenize(utterance)
+
     def process(self, utterance):
-        tokens = self.tokenizer.tokenize(utterance)
+        tokens = self.tokenize(utterance)
         for i in range(len(tokens)):
             tokens[i] = self.stemmer.stem(tokens[i])
 

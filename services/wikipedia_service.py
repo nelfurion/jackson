@@ -28,7 +28,7 @@ class WikipediaService(DataService):
             request_url += '&exintro'
 
         response = urlopen(request_url).read()
-        response = response.decode('utf8')
+        response = response.decode('utf-8')
         pages = json.loads(response)['query']['pages']
 
         print('Finished request: ', request_url, '...')
@@ -46,7 +46,7 @@ class WikipediaService(DataService):
         })
 
         response = urlopen(request_url).read()
-        response = response.decode('utf8')
+        response = response.decode('utf-8')
 
         print('Finished request: ', request_url, '...')
 

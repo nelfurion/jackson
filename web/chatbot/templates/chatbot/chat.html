@@ -1,0 +1,14 @@
+{% extends 'chatbot/base.html' %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div id="chat_chat_log" class="col-md-12 well well-lg"></div>
+
+            <div class="row">
+                <input id="chat_user_input" type="text" class="col-md-9 col-md-offset-1" />
+                <button id="chat_btn_send" class="btn btn-primary col-md-1 col-md-offset-1">Send</button>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

@@ -16,8 +16,9 @@ class NltkEntityExtractor(EntityExtractor):
         entities = []
 
         tagged_sentences = self.preprocess(text)
-        chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
+        chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=False)
         for sentence_tree in chunked_sentences:
+            sentence_tree.draw()
             entities.extend(self.get_names_from_chunks(sentence_tree))
 
         return entities
@@ -25,7 +26,7 @@ class NltkEntityExtractor(EntityExtractor):
     def get_names_from_chunks(self, chunk):
         entities = []
         if hasattr(chunk, 'label') and chunk.label:
-            if chunk.label() == 'NE':
+            if chunk.label() != 'S':
                 entities.append(' '.join([child[0] for child in chunk]))
             else:
                 for child in chunk:
