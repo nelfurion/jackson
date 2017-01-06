@@ -7,6 +7,7 @@ numpy>=1.11.1
 scipy>=0.17.1
 nltk>=3.2.1,
 clint=0.5.1
+bllipparser
 ```
 
 You can install them from 'requirements.txt' with your
@@ -19,6 +20,8 @@ PIP: pip install -r './requirements.txt'
 CONDA: conda install --file './requirements.txt'
 ```
 
+Because bllipparser is not readily available for Windows, installation is easier on Linux machines.
+
 You also have to install several nltk packages, found in nltk_requirements.txt:
 ```
 punkt
@@ -26,6 +29,12 @@ averaged_perceptron
 maxent_ne_chunker
 words
 stopwords
+```
+
+You should also download the Wall Street Journal parsing model.
+
+```
+sudo python -m nltk.downloader bllip_wsj_no_aux
 ```
 
 They can be installed from the command line like so:

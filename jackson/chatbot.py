@@ -1,6 +1,7 @@
 import string
 import re
 import sys
+import nltk
 sys.path.append('../')
 
 from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
@@ -20,13 +21,23 @@ class Chatbot:
         self.context += (utterance)
         self.last_utterance = utterance
 
+        '''
+        tree = nltk.pos_tag(utterance.split(' '))
+        print(tree)
+        #tree.draw()
+        for chunk in tree:
+            if hasattr(chunk, 'label') and chunk.label:
+                print(chunk.label())
+                if chunk.label() == 'NP':
+                    print('subject: ', chunk)
+        '''
+
     def answer(self):
         features = self.text_processor.vectorize(self.last_utterance)
         topic = self.question_classifier.predict(features)
         print('[', topic, ']')
 
         answer = ''
-
         entities = self.entity_extractor.get_entities(self.last_utterance)
         print('ENTITIES:')
         print(entities)

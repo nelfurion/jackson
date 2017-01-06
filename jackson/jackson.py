@@ -3,7 +3,6 @@ sys.path.append('../')
 sys.path.append('../preprocess')
 
 from sklearn.externals import joblib
-from clint.textui import colored
 
 from information_retrieval.summarizer import Summarizer
 from services.wikipedia_service import WikipediaService

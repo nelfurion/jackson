@@ -1,10 +1,10 @@
 from django.conf.urls import url
-from . import views
+from .controllers import ChatController, IndexController, LogsController
 
 app_name = 'chatbot'
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^chat/$', views.ChatView.as_view(), name='chat_view'),
-    url(r'^chat/$', views.LogsView.as_view(), name='logs_view'),
+    url(r'^$', IndexController.handle, name='index'),
+    url(r'^chat/$', ChatController.handle, name='chat_view'),
+    url(r'^logs/$', LogsController.handle, name='logs_view'),
 ]

@@ -1,14 +1,31 @@
 #chat_chat_log {
-    min-height: 200px;
-
-.user_input {
-    //border: 1px solid #6EABBD;
-    border-radius: 5px;
-    background-color: #6EABBD;
+    overflow: scroll;
+    height: 200px;
 }
 
-.chatbot_output {
+.chat_user_input, .chatbot_output {
+    margin-bottom: 10px;
+}
+
+.chat_user_input div {
+    width: 400px;
+    border-radius: 5px;
+    background-color: #365899;
+    color: white;
+    min-height: 25px;
+    padding-right: 5px;
+    padding-left: 5px;
+    word-break: break-all;
+}
+
+
+.chatbot_output div {
     //border: 1px solid #7D1935;
     border-radius: 5px;
     background-color: #7D1935;
+    color: white;
+    min-height: 25px;
+    padding-left: 5px;
+    width: 400px;
+    padding-left: 5px;
 }

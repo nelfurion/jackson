@@ -18,4 +18,5 @@ class TextProcessor:
 
     def vectorize(self, utterance):
         vector = self.vectorizer.transform([utterance]).toarray()
+
         return numpy.array(vector)
