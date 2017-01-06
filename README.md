@@ -8,6 +8,7 @@ scipy>=0.17.1
 nltk>=3.2.1,
 clint=0.5.1
 bllipparser
+neo4jrestclient
 ```
 
 You can install them from 'requirements.txt' with your

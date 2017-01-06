@@ -5,80 +5,89 @@ import nltk
 sys.path.append('../')
 
 from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
+from .question_types import QuestionTypes
 
 class Chatbot:
-    def __init__(self, text_processor, question_classifier, data_service, summarizer):
+    def __init__(self, text_processor, question_classifier, data_service, data_manager, summarizer):
         self.text_processor = text_processor
-        self.context = ""
+        self.log = ""
         self.last_utterance = ""
+        self.tokenized_utterance = []
         self.question_classifier = question_classifier
         self.data_service = data_service
+        self.data_manager = data_manager
         self.summarizer = summarizer
         self.entity_extractor = NltkEntityExtractor()
+        self.remembered = False
+        self.last_question_type = None
 
     def read(self, utterance):
-        text = self.text_processor.process(utterance)
-        self.context += (utterance)
+        self.log += (utterance)
         self.last_utterance = utterance
+        self.tokenized_utterance = self.text_processor.tokenize(utterance)
 
-        '''
-        tree = nltk.pos_tag(utterance.split(' '))
-        print(tree)
-        #tree.draw()
-        for chunk in tree:
-            if hasattr(chunk, 'label') and chunk.label:
-                print(chunk.label())
-                if chunk.label() == 'NP':
-                    print('subject: ', chunk)
-        '''
+        self.last_question_type = self._get_question_type(utterance)
+        print(self.last_question_type)
+        if self.last_question_type == QuestionTypes.Declarative:
+            isRemembered = self.data_manager.try_remember(self.tokenized_utterance)
+            self.remembered = isRemembered
 
     def answer(self):
-        features = self.text_processor.vectorize(self.last_utterance)
-        topic = self.question_classifier.predict(features)
-        print('[', topic, ']')
-
         answer = ''
-        entities = self.entity_extractor.get_entities(self.last_utterance)
-        print('ENTITIES:')
-        print(entities)
 
-        if topic == 'HUM':
-            entities_info = []
+        if self.last_question_type == QuestionTypes.Declarative:
+            answer = 'I learned that ' + self.last_utterance
+        elif self.last_question_type == QuestionTypes.Informative:
+            topic = self._get_topic()
+            entities = self._get_entities()
 
-            for entity in entities:
-                entity_info = self.data_service.find(entity)
-                summary = self.summarizer.summarize(3, entity_info)
-                entities_info.append(entity + '\n' + summary)
-
-            answer = '\n'.join(entities_info)
-
-        if topic == 'ABBR':
-            answer = ''
-            punctuation_exp = '[' + string.punctuation + ']'
-            last_utterance = re.sub(
-                punctuation_exp,
-                '',
-                self.last_utterance)
-
-            print(last_utterance)
-
-            entities = self.entity_extractor.get_entities(last_utterance)
-            print(entities)
-
-            if len(entities) > 0:
+            if topic == 'HUM':
                 entities_info = []
+
                 for entity in entities:
                     entity_info = self.data_service.find(entity)
-                    if len(entity_info) > 0:
-                        summary = self.summarizer.summarize(3, entity_info)
-                        entities_info.append(entity + '\n' + summary)
+                    summary = self.summarizer.summarize(3, entity_info)
+                    entities_info.append(entity + '\n' + summary)
 
                 answer = '\n'.join(entities_info)
-            else:
-                tokens = self.text_processor.tokenize(self.last_utterance)
-                #for token in tokens:
 
-        if len(answer) == 0:
-            answer = "I don't know. What do you think?"
+            if topic == 'ABBR':
+                if len(entities) > 0:
+                    entities_info = []
+                    for entity in entities:
+                        entity_info = self.data_service.find(entity)
+                        if len(entity_info) > 0:
+                            summary = self.summarizer.summarize(3, entity_info)
+                            entities_info.append(entity + '\n' + summary)
+
+                    answer = '\n'.join(entities_info)
+
+            if len(answer) == 0:
+                answer = "I don't know. What do you think?"
 
         return answer
+
+    def _get_topic(self):
+        features = self.text_processor.vectorize(self.last_utterance)
+        return self.question_classifier.predict(features)
+
+    def _get_entities(self):
+        punctuation_exp = '[' + string.punctuation + ']'
+        last_utterance = re.sub(
+            punctuation_exp,
+            '',
+            self.last_utterance)
+
+        return self.entity_extractor.get_entities(self.last_utterance)
+
+    def _get_question_type(self, tokenized_input):
+        #stupid but enough for now
+        mark = self.last_utterance[len(self.last_utterance) - 1]
+        if mark == '.':
+            return QuestionTypes.Declarative
+        elif mark == '?':
+            #TODO: find a way to categorize whether the question is informative or interogative
+            return QuestionTypes.Informative
+        elif mark == '!':
+            return QuestionTypes.Exclamatory
+
