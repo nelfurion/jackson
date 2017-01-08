@@ -21,5 +21,5 @@ termcolor==1.1.0
 thinc==5.0.8
 ujson==1.35
 bllipparser==2016.9.11
-pastedeploy=1.5.2
-gunicorn=19.1.0 
+pastedeploy==1.5.2
+gunicorn==19.1.0
