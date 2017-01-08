@@ -10,7 +10,6 @@ numpy==1.11.3
 pathlib==1.0.1
 plac==0.9.6
 preshed==0.46.4
-pyStatParser==0.0.1
 requests==2.12.4
 scikit-learn==0.18.1
 scipy==0.18.1
