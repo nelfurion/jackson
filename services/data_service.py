@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../')
 from decorators.abstract_method import abstract_method
 
 class DataService:

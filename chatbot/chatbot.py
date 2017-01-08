@@ -1,8 +1,5 @@
 import string
 import re
-import sys
-import nltk
-sys.path.append('../')
 
 from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
 from .question_types import QuestionTypes
@@ -22,11 +19,11 @@ class Chatbot:
         self.last_question_type = None
 
     def read(self, utterance):
-        self.log += (utterance)
-        self.last_utterance = utterance
-        self.tokenized_utterance = self.text_processor.tokenize(utterance)
-
         self.last_question_type = self._get_question_type(utterance)
+        self.log += (utterance)
+        self.last_utterance = self._remove_punctuation(utterance)
+        self.tokenized_utterance = self.text_processor.tokenize(self.last_utterance)
+
         print(self.last_question_type)
         if self.last_question_type == QuestionTypes.Declarative:
             isRemembered = self.data_manager.try_remember(self.tokenized_utterance)
@@ -35,9 +32,11 @@ class Chatbot:
     def answer(self):
         answer = ''
 
-        if self.last_question_type == QuestionTypes.Declarative:
+        if (self.last_question_type == QuestionTypes.Declarative
+            and self.remembered):
             answer = 'I learned that ' + self.last_utterance
         elif self.last_question_type == QuestionTypes.Informative:
+            answer = self.data_manager.try_answer(self.tokenized_utterance) or ''
             topic = self._get_topic()
             entities = self._get_entities()
 
@@ -71,18 +70,25 @@ class Chatbot:
         features = self.text_processor.vectorize(self.last_utterance)
         return self.question_classifier.predict(features)
 
+    def _remove_punctuation(self, utterance):
+        punctuation_exp = '[' + string.punctuation + ']'
+        return re.sub(
+            punctuation_exp,
+            '',
+            utterance)
+
     def _get_entities(self):
         punctuation_exp = '[' + string.punctuation + ']'
-        last_utterance = re.sub(
+        re.sub(
             punctuation_exp,
             '',
             self.last_utterance)
 
         return self.entity_extractor.get_entities(self.last_utterance)
 
-    def _get_question_type(self, tokenized_input):
+    def _get_question_type(self, utterance):
         #stupid but enough for now
-        mark = self.last_utterance[len(self.last_utterance) - 1]
+        mark = utterance[len(utterance) - 1]
         if mark == '.':
             return QuestionTypes.Declarative
         elif mark == '?':
@@ -90,4 +96,3 @@ class Chatbot:
             return QuestionTypes.Informative
         elif mark == '!':
             return QuestionTypes.Exclamatory
-

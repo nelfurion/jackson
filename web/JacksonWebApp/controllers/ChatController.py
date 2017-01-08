@@ -1,12 +1,14 @@
 import json
-import sys
-sys.path.append('../')
-
-from jackson.jackson import jackson
-from jackson.dialogue_manager import DialogueManager
 
 from django.http import JsonResponse
 from django.shortcuts import render
+
+import os
+import sys
+sys.path.append(os.getcwd())
+print(os.getcwd())
+
+from jackson import jackson
 
 def handle(request):
     if(request.method == 'POST'):
@@ -19,4 +21,4 @@ def handle(request):
             'answer': jackson.answer()
         })
     else:
-        return render(request, 'chatbot/chat.html')
+        return render(request, 'JacksonWebApp/chat.html')

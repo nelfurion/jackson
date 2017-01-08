@@ -1,6 +1,6 @@
 import nltk
 
-from information_retrieval.entity_extractor import EntityExtractor
+from .entity_extractor import EntityExtractor
 
 class NltkEntityExtractor(EntityExtractor):
     """Uses nltk to extract entities from text. Implements EntityExtractor."""

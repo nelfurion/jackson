@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from .controllers import ChatController, IndexController, LogsController
 
-app_name = 'chatbot'
+app_name = 'JacksonWebApp'
 
 urlpatterns = [
     url(r'^$', IndexController.handle, name='index'),

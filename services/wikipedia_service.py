@@ -1,7 +1,7 @@
 import json
 
 from urllib.request import urlopen
-from services.data_service import DataService
+from .data_service import DataService
 
 class WikipediaService(DataService):
     'A data service class for wikipedia.'

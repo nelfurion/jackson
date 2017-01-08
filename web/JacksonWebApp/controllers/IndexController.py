@@ -7,4 +7,4 @@ def handle(request):
         'chat_logs_count': 346
     }
 
-    return render(request, 'chatbot/index.html', {'statistics': statistics})
+    return render(request, 'JacksonWebApp/index.html', {'statistics': statistics})

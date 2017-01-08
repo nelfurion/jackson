@@ -1,8 +1,6 @@
 from neo4jrestclient.client import GraphDatabase
 from neo4jrestclient import client
 
-from .data_service import DataService
-
 class DatabaseService():
     def __init__(self):
         self.db = GraphDatabase("http://hobby-gbmnkacijildgbkegogbbmol.dbs.graphenedb.com:24789/db/data/",
@@ -13,7 +11,10 @@ class DatabaseService():
         q = 'MATCH (n) WHERE n.name="' + name + '" RETURN n'
         results = self.db.query(q, returns=(client.Node))
 
-        return results[0][0]
+        if len(results) > 0:
+            return results[0][0]
+
+        return None
 
     def search(self, name):
         '''Searches for documents with the given name.'''
@@ -35,7 +36,7 @@ class DatabaseService():
     def add(self, name, **kwargs):
         node = self.get(name)
 
-        if  node:
+        if node:
             return node
 
         return self.db.nodes.create(name=name, **kwargs)

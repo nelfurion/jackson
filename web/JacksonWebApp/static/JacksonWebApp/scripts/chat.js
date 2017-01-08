@@ -1,5 +1,5 @@
 (function($) {
-    var CHAT_ENDPOINT = '/chatbot/chat/',
+    var CHAT_ENDPOINT = '/jackson/chat/',
         sendButton = $('#chat_btn_send'),
         chatLogContainer = $('#chat_chat_log'),
         inputField = $('#chat_user_input'),

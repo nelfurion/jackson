@@ -12,7 +12,7 @@
 
     {% load static %}
     {% block extrahead %}
-      <link href="{% static "chatbot/styles/chat.css" %}" rel="stylesheet">
+      <link href="{% static "JacksonWebApp/styles/chat.css" %}" rel="stylesheet">
 
     {% endblock %}
 
@@ -23,7 +23,7 @@
     <![endif]-->
   </head>
   <body>
-    {% include 'chatbot/navigation.html' %}
+    {% include 'JacksonWebApp/navigation.html' %}
     {% block content %}
     {% endblock %}
 
@@ -31,6 +31,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="{% static "chatbot/scripts/chat.js" %}"></script>
+    <script src="{% static "JacksonWebApp/scripts/chat.js" %}"></script>
   </body>
 </html>

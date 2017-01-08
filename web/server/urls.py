@@ -17,6 +17,6 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^chatbot/', include('chatbot.urls')),
+    url(r'^jackson/', include('JacksonWebApp.urls')),
     url(r'^admin/', admin.site.urls),
 ]
