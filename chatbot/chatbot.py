@@ -30,41 +30,46 @@ class Chatbot:
             self.remembered = isRemembered
 
     def answer(self):
-        answer = ''
-
         if (self.last_question_type == QuestionTypes.Declarative
             and self.remembered):
-            answer = 'I learned that ' + self.last_utterance
+            return self._answer_declarative()
         elif self.last_question_type == QuestionTypes.Informative:
-            answer = self.data_manager.try_answer(self.tokenized_utterance) or ''
-            topic = self._get_topic()
-            entities = self._get_entities()
+            return self._answer_informative()
 
-            if topic == 'HUM':
+    def _answer_informative(self):
+        print('asd')
+        answer = self.data_manager.try_answer(self.tokenized_utterance) or ''
+        topic = self._get_topic()
+        entities = self._get_entities()
+
+        if topic == 'HUM':
+            entities_info = []
+
+            for entity in entities:
+                entity_info = self.data_service.find(entity)
+                summary = self.summarizer.summarize(3, entity_info)
+                entities_info.append(entity + '\n' + summary)
+
+            answer = '\n'.join(entities_info)
+
+        if topic == 'ABBR':
+            if len(entities) > 0:
                 entities_info = []
-
                 for entity in entities:
                     entity_info = self.data_service.find(entity)
-                    summary = self.summarizer.summarize(3, entity_info)
-                    entities_info.append(entity + '\n' + summary)
+                    if len(entity_info) > 0:
+                        summary = self.summarizer.summarize(3, entity_info)
+                        entities_info.append(entity + '\n' + summary)
 
                 answer = '\n'.join(entities_info)
 
-            if topic == 'ABBR':
-                if len(entities) > 0:
-                    entities_info = []
-                    for entity in entities:
-                        entity_info = self.data_service.find(entity)
-                        if len(entity_info) > 0:
-                            summary = self.summarizer.summarize(3, entity_info)
-                            entities_info.append(entity + '\n' + summary)
-
-                    answer = '\n'.join(entities_info)
-
-            if len(answer) == 0:
-                answer = "I don't know. What do you think?"
+        if len(answer) == 0:
+            answer = "I don't know. What do you think?"
 
         return answer
+
+    def _answer_declarative(self):
+        return 'I learned that ' + self.last_utterance
 
     def _get_topic(self):
         features = self.text_processor.vectorize(self.last_utterance)

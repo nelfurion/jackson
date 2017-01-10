@@ -1,10 +1,11 @@
 import numpy
 
 class TextProcessor:
-    def __init__(self, tokenizer, stemmer, vectorizer):
+    def __init__(self, tokenizer, stemmer, vectorizer, lemmatizer):
         self.tokenizer = tokenizer
         self.stemmer = stemmer
         self.vectorizer = vectorizer
+        self.lemmatizer = lemmatizer
 
     def tokenize(self, utterance):
         return self.tokenizer.tokenize(utterance)
@@ -20,3 +21,10 @@ class TextProcessor:
         vector = self.vectorizer.transform([utterance]).toarray()
 
         return numpy.array(vector)
+
+    def get_lemmas(self, word, function):
+        print('Text processor')
+        return self.lemmatizer.get_lemmas(word, function)
+
+    def lemmatize(self, word, function):
+        return self.lemmatizer.lemmatize(word, function)

@@ -16,18 +16,10 @@ class DatabaseService():
 
         return None
 
-    def search(self, name):
-        '''Searches for documents with the given name.'''
-        pass
+    def _relation_exists(self, first_node, second_node, label):
+        relationships = first_node.relationships.all(types=[label])
 
-    def find(self, name):
-        '''First searches for a document, then gets the matching one'''
-        pass
-
-    def _relation_exists(self, first, second, label):
-        relationships = first.relationships.all(types=[label])
-
-        return second in [rel.end for rel in relationships]
+        return second_node in [rel.end for rel in relationships]
 
     def add_relation(self, first, second, label):
         if not self._relation_exists(first, second, label):
@@ -40,3 +32,8 @@ class DatabaseService():
             return node
 
         return self.db.nodes.create(name=name, **kwargs)
+
+    def get_relations(self, node, label):
+        return [rel.end.properties['name']
+                for rel
+                in node.relationships.all(types=[label])]
