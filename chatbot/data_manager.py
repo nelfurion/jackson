@@ -38,9 +38,12 @@ class DataManager():
         return remembered
 
     def try_answer(self, tokenized_sentence):
-        print('TRY ANSER')
-        tree = self.parser.parse(tokenized_sentence)
+        tree = self.parser.parse_one(tokenized_sentence)
         svos = self._get_svos(tree)
+
+        search_phrases = self._get_search_phrases(tree)
+        print('S' * 30)
+        print(search_phrases)
 
         answer = None
         for svo in svos:
@@ -65,6 +68,18 @@ class DataManager():
         print(answer)
 
         return answer
+
+    def answer_from_wiki(self, tokenized_sentence):
+        tree = self.parser.parse_one(tokenized_sentence)
+        search_phrases = self._get_search_phrases(tree)
+        results = []
+
+        for search_phrase in search_phrases:
+            info = self.wiki_service.find(search_phrase)
+            if len(info) > 0:
+                results.append(info)
+
+        return results
 
     def _is_full_svo(self, svo):
         return ('subject' in svo
@@ -141,11 +156,29 @@ class DataManager():
                 if 'VP' in node.label():
                     return self._get_noun_text(node)
 
-    def _get_nj_phrases(self, tree):
+    def _get_search_phrases(self, tree):
         phrase_extractor = PhraseExtractor()
         nj_phrases = phrase_extractor.extract(tree)
-        print('Extracted nouns:')
-        print(nj_phrases[0])
-        print('Extracted adjectives:')
-        print(nj_phrases[1])
-        return nj_phrases
+
+        for adjective in nj_phrases[1][0]:
+            print(adjective, ' ------------- ')
+            synonyms = self.text_processor.get_synonyms(adjective + '.a.01')
+            #print('ADJECTIVE: ', adjective, ' LEMMAS: ')
+
+            #for synonym in synonyms:
+            #    print(synonym)
+
+            for noun in nj_phrases[0][0]:
+                print(noun, ' -----------')
+                nj_phrases[0][1].add(adjective + ' ' + noun)
+
+                synonyms = self.text_processor.get_synonyms(noun + '.n.01')
+            #    print('NOUN: ', noun, ' LEMMAS: ')
+
+            #    for synonym in synonyms:
+            #        print(synonym)
+
+        result = nj_phrases[0][0]
+        result.update(nj_phrases[0][1])
+
+        return result

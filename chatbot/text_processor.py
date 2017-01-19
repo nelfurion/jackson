@@ -28,3 +28,6 @@ class TextProcessor:
 
     def lemmatize(self, word, function):
         return self.lemmatizer.lemmatize(word, function)
+
+    def get_synonyms(self, word):
+        return self.lemmatizer.get_synonyms(word)

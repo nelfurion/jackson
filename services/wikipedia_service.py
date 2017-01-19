@@ -56,10 +56,14 @@ class WikipediaService(DataService):
         return json.loads(response)
 
     def find(self, name):
-        print('WIKI: find -> ', name)
-        search_result = self.search(name)
-        page_name = search_result[1][0]
-        return self.get(page_name)
+        try:
+            print('WIKI: find -> ', name)
+            search_result = self.search(name)
+            page_name = search_result[1][0]
+            return self.get(page_name)
+        except IndexError as e:
+            print('WIKI SERVICE: Index error.')
+            return ''
 
     def create_request(self, params):
         request_url = self.ENDPOINT

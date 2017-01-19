@@ -6,7 +6,6 @@ class PhraseExtractor:
         nouns = self._extract_nouns(tree)
         adjectives = self._extract_adjectives(tree)
 
-
         return nouns, adjectives
 
     def _is_used_as_noun(self, text):
@@ -22,43 +21,45 @@ class PhraseExtractor:
 
         return True
 
-    def _extract_nouns(self, tree, depth = 0):
+    def _extract_nouns(self, tree):
         nouns = set()
         noun_phrases = set()
         for node in tree:
             if hasattr(node, 'label'):
-                node_depth = depth
                 node_text = ' '.join(node.leaves())
                 node_label = node.label()
 
                 if 'NN' in node_label\
                         and self._is_used_as_noun(node_text):
-                    nouns.add((node_text, node_depth))
+                    print('APPENDING: ', node_text)
+                    nouns.add(node_text)
                 if node_label == 'NP'\
                         and self._is_used_as_noun(node_text):
-                    noun_phrases.add((node_text, node_depth))
+                    print('APPENDING: ', node_text)
+                    noun_phrases.add(node_text)
 
-                nouns_and_phrases = self._extract_nouns(node, depth + 1)
+                nouns_and_phrases = self._extract_nouns(node)
                 nouns.update(nouns_and_phrases[0])
                 noun_phrases.update(nouns_and_phrases[1])
 
         return nouns, noun_phrases
 
-    def _extract_adjectives(self, tree, depth = 0):
+    def _extract_adjectives(self, tree):
         adjectives = set()
         adjective_phrases = set()
         for node in tree:
             if hasattr(node, 'label'):
-                node_depth = depth
                 node_label = node.label()
                 node_text = ' '.join(node.leaves())
 
                 if node_label == 'ADJP':
-                    adjective_phrases.add((node_text, node_depth))
+                    adjective_phrases.add(node_text)
+                    print('APPENDING: ', node_text)
                 if 'JJ' in node_label:
-                    adjectives.add((node_text, node_depth))
+                    adjectives.add(node_text)
+                    print('APPENDING: ', node_text)
 
-                adjectives_and_phrases = self._extract_adjectives(node, depth + 1)
+                adjectives_and_phrases = self._extract_adjectives(node)
                 adjectives.update(adjectives_and_phrases[0])
                 adjective_phrases.update(adjectives_and_phrases[1])
 

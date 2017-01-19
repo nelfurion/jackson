@@ -39,6 +39,8 @@ class Chatbot:
     def _answer_informative(self):
         answer = self.data_manager.try_answer(self.tokenized_utterance) or ''
         topic = self._get_topic()
+        print('TOPIC: ')
+        print(topic)
         entities = self._get_entities()
 
         if topic == 'HUM':
@@ -61,6 +63,13 @@ class Chatbot:
                         entities_info.append(entity + '\n' + summary)
 
                 answer = '\n'.join(entities_info)
+
+        if topic in ['ENTY', 'DESC', 'NUM', 'LOC']:
+            results = self.data_manager.answer_from_wiki(self.tokenized_utterance)
+            if results:
+                answer = self.summarizer.summarize(3, ' '.join(results))
+            else:
+                print('NO RESULTS FRMO WIKI FOR ENTY')
 
         if len(answer) == 0:
             answer = "I don't know. What do you think?"
