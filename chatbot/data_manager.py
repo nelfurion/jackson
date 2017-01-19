@@ -1,3 +1,5 @@
+from information_retrieval.phrase_extractor import PhraseExtractor
+
 class DataManager():
     ANSWER_FULL_FORMAT = '{subject} {verb} {related_nodes}'
     ANSWER_NO_RELATIONS_FORMAT = 'I know {subject}, but I don\'t know what {subject} {verb}.'
@@ -138,3 +140,12 @@ class DataManager():
             if hasattr(node, 'label'):
                 if 'VP' in node.label():
                     return self._get_noun_text(node)
+
+    def _get_nj_phrases(self, tree):
+        phrase_extractor = PhraseExtractor()
+        nj_phrases = phrase_extractor.extract(tree)
+        print('Extracted nouns:')
+        print(nj_phrases[0])
+        print('Extracted adjectives:')
+        print(nj_phrases[1])
+        return nj_phrases

@@ -1,6 +1,6 @@
 import nltk
-import numpy
 import string
+import ast
 
 from sklearn.externals import joblib
 
@@ -8,9 +8,9 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_selection import SelectPercentile, f_classif
 
 VECTORIZERS_FOLDER = '../models/vectorizers/'
+CLASSIFIERS_FOLDER = '../models/classifiers/'
 PUNCTUATIONS = string.punctuation + '?\n'
 
 def encode_data(parsed_data):
@@ -20,8 +20,6 @@ def encode_data(parsed_data):
 
     first_words = [sentence.split()[0] for sentence in parsed_data['features']]
 
-    #features_with_pos_tags = add_position_tags(parsed_data['features'])
-
     features_tuple = get_pos_tags(parsed_data['features'])
     parsed_data['features'] = features_tuple[1]
 
@@ -29,7 +27,6 @@ def encode_data(parsed_data):
     for i in range(len(parsed_data['features'])):
         parsed_data['features'][i] = 'a world'
 
-    #AUTISM
     '''
     tokenized_questions = [nltk.word_tokenize(question) for question in parsed_data['features']]
     tagged_questions = [nltk.pos_tag(question) for question in tokenized_questions]
@@ -50,18 +47,21 @@ def encode_data(parsed_data):
         features_with_pos_tags[i] += ' ' + first_words[i]
         if len(nodes[i]) > 0:
             features_with_pos_tags[i] += ' ' + ' '.join(nodes[i])
-
     '''
-    #parsed_data['features'] = features_with_pos_tags
 
     return parsed_data
 
+def tokenize(sentences_array):
+    return [nltk.word_tokenize(sentence) for sentence in sentences_array]
+
 def transform_data(encoded_data, vectorizer):
-    #print(encoded_data['features'])
     features = encoded_data['features']
     features = vectorizer.transform(features).toarray()
 
-    return (features, encoded_data['labels'], encoded_data['sublabels'])
+    if 'sublabels' in encoded_data.keys():
+        return (features, encoded_data['labels'], encoded_data['sublabels'])
+
+    return (features, encoded_data['labels'])
 
 def load_or_train_vectorizer(vectorizer = None, train_features = None, save_file_name = None):
     if type(vectorizer) is str:
@@ -80,14 +80,13 @@ def train_vectorizer(vectorizer, train_features, file_name):
 
     vectorizer.fit(train_features)
 
-    vectorizer_name = vectorizer.__class__.__name__
     file_name = VECTORIZERS_FOLDER + file_name + '.pkl'
     joblib.dump(vectorizer, file_name)
 
     return vectorizer
 
 def get_pos_tags(questions):
-    tokenized_questions = [nltk.word_tokenize(question) for question in questions]
+    tokenized_questions = tokenize(questions)
     tagged_questions = [nltk.pos_tag(question) for question in tokenized_questions]
     pos_tags = []
     pos_tag_strings = []
@@ -142,6 +141,21 @@ def parse_data(file, stemmer=SnowballStemmer("english")):
 
     return parsed_data
 
+def parse_from_json(file_name, features_field, label_field):
+    features = []
+    labels = []
+    with open(file_name, "r") as read_file:
+        for line in read_file:
+            obj = ast.literal_eval(line)
+
+            features.append(obj[features_field])
+            labels.append(obj[label_field])
+
+    return {
+        'features': features,
+        'labels':labels
+    }
+
 def get_vectorizer_weights(vectorizer, features):
     weights = dict(zip(vectorizer.get_feature_names(), features.data))
     return weights
@@ -149,3 +163,18 @@ def get_vectorizer_weights(vectorizer, features):
 def print_to_file(text, action):
     with open("output.txt", action) as myfile:
         myfile.write(str(text))
+
+def save_classifier(classifier, classifier_name, accuracy, parameters = None, folder=''):
+    file_name = 'q_clf_' + classifier_name + '_'
+    if parameters:
+        for key, value in parameters.items():
+            file_name += str(key) + '='
+            file_name += str(value) + '_'
+
+    file_name += 'accuracy=' + str(accuracy)
+    file_name += '.pkl'
+
+    if len(folder) > 0 and folder[len(folder) - 1] != '/':
+        folder += '/'
+
+    joblib.dump(classifier, CLASSIFIERS_FOLDER + folder + file_name)

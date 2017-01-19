@@ -6,6 +6,6 @@ from sklearn.naive_bayes import MultinomialNB
 config = {
     'models': [MultinomialNB()],
     'models_parameters': [{
-        'alpha': np.arange(0, 0.1, 0.1),
+        'alpha': np.arange(0, 0.1, 0.2),
     }]
 }

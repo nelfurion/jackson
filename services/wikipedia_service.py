@@ -33,6 +33,9 @@ class WikipediaService(DataService):
 
         print('Finished request: ', request_url, '...')
 
+        print('WIKI: get full result -> ', pages)
+        print('WIKI: get first page -> ', pages[list(pages)[0]])
+
         return pages[list(pages)[0]]['extract']
 
     def search(self, name):
@@ -49,10 +52,11 @@ class WikipediaService(DataService):
         response = response.decode('utf-8')
 
         print('Finished request: ', request_url, '...')
-
+        print('WIKI: search result -> ', json.loads(response))
         return json.loads(response)
 
     def find(self, name):
+        print('WIKI: find -> ', name)
         search_result = self.search(name)
         page_name = search_result[1][0]
         return self.get(page_name)

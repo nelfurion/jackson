@@ -24,7 +24,7 @@ class Chatbot:
         self.last_utterance = self._remove_punctuation(utterance)
         self.tokenized_utterance = self.text_processor.tokenize(self.last_utterance)
 
-        print(self.last_question_type)
+        print('Last question type: ', self.last_question_type)
         if self.last_question_type == QuestionTypes.Declarative:
             isRemembered = self.data_manager.try_remember(self.tokenized_utterance)
             self.remembered = isRemembered
@@ -37,7 +37,6 @@ class Chatbot:
             return self._answer_informative()
 
     def _answer_informative(self):
-        print('asd')
         answer = self.data_manager.try_answer(self.tokenized_utterance) or ''
         topic = self._get_topic()
         entities = self._get_entities()

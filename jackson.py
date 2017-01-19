@@ -30,5 +30,5 @@ jackson = Chatbot(
         DatabaseService(),
         WikipediaService(),
         None,
-        Parser()),
+        Parser.get_instance()),
     Summarizer())

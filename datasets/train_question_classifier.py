@@ -4,7 +4,7 @@ There are a number of wrong thing in this file...
 '''
 import numpy
 
-from config import config
+from .config import config
 
 import encode
 
@@ -76,6 +76,6 @@ for i, model in enumerate(config['models']):
     print('='*30)
 
     if hasattr(classifier, 'best_params_'):
-        save_classifier(model.__class__.__name__, accuracy, classifier.best_params_)
+        encode.save_classifier(classifier, model.__class__.__name__, accuracy, classifier.best_params)
     else:
-        save_classifier(model.__class__.__name__, accuracy)
+        encode.save_classifier(classifier, model.__class__.__name__, accuracy)
