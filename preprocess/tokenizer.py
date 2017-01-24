@@ -1,6 +1,8 @@
-from ..decorators.abstract_method import abstract_method
+import nltk
 
 class Tokenizer:
-    @abstract_method
-    def tokenize(self, text):
-        pass
+    def tokenize_words(self, text):
+        return nltk.word_tokenize(text)
+
+    def tokenize_sentences(self, text):
+        return nltk.sent_tokenize(text)

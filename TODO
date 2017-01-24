@@ -1,35 +1,3 @@
-The boy will have a bear.
-I learned that The boy will have a bear
-What will the boy have?
-the boy will have a bear
-Will the boy have a bear?
-the boy Will have a bear
-Does the boy have a bear?
-I know the boy, but I don't know what the boy have.
-Who is the boy?
-I don't know. What do you think?
-The boy will have TUES.
-I learned that The boy will have TUES
-What will the boy have?
-the boy will have a bear, tues
-Will the boy have a bear?
-the boy Will have a bear, tues
-Will the boy have bear?
-the boy Will have a bear, tues
-Who will have tues?
-I don't know. What do you think?
-Rado will have the boy.
-I learned that Rado will have the boy
-Will Rado have TUES?
-Rado Will have the boy
-Will the boy have TUES?
-the boy Will have a bear, tues, the boy
-Niki will have TUES.
-I learned that Niki will have TUES
-Ivo will have diplomna.
-I learned that Ivo will have diplomna
-Gf will have Ivo.
-I learned that Gf will have Ivo
 Will Ivo have gf?
 
 
@@ -37,3 +5,28 @@ ERRORS:
 Who was The Pride of the Yankees ?
 What does a spermologer collect ?
 NOUN PHRASES IN WHAT DOES QUESTIONS
+What does AIDS stand for?
+What does the abbreviation AIDS stand for ?
+
+Multiple \n in wikipedia articles.
+
+Internal Server Error: /jackson/chat/
+Traceback (most recent call last):
+  File "/home/nelfurion/anaconda3/envs/ml/lib/python3.5/site-packages/django/core/handlers/exception.py", line 39, in inner
+    response = get_response(request)
+  File "/home/nelfurion/anaconda3/envs/ml/lib/python3.5/site-packages/django/core/handlers/base.py", line 187, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/home/nelfurion/anaconda3/envs/ml/lib/python3.5/site-packages/django/core/handlers/base.py", line 185, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/media/nelfurion/trunk/jackson/jackson/web/JacksonWebApp/controllers/ChatController.py", line 21, in handle
+    'answer': jackson.answer()
+  File "/media/nelfurion/trunk/jackson/jackson/chatbot/chatbot.py", line 37, in answer
+    return self._answer_informative()
+  File "/media/nelfurion/trunk/jackson/jackson/chatbot/chatbot.py", line 68, in _answer_informative
+    answer = self.data_manager.answer_from_wiki(self.tokenized_utterance)
+  File "/media/nelfurion/trunk/jackson/jackson/chatbot/data_manager.py", line 86, in answer_from_wiki
+    full_text += self.wiki_service.get(title)
+  File "/media/nelfurion/trunk/jackson/jackson/services/wikipedia_service.py", line 88, in get
+    result_text += page_extract[0:headers[0].span()[0]]
+IndexError: list index out of range
+

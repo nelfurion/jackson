@@ -1,69 +1,112 @@
 import json
+import re
 
 from urllib.request import urlopen
-from .data_service import DataService
 
-class WikipediaService(DataService):
+from . import wiki_skip
+
+class WikipediaService():
     'A data service class for wikipedia.'
 
     ENDPOINT = 'https://en.wikipedia.org/w/api.php?'
     FORMAT = 'json'
+    header_expression = re.compile(wiki_skip.HEADER_PATTERN)
+
     def __init__(self):
         pass
 
-    def get(self, name, part='intro'):
-        'Returns a document whose name matches the given.'
-
+    def search(self, name):
+        'Searches for page names.'
         request_url = self.create_request({
             'action': 'query',
-            'titles': name,
-            'prop': 'extracts',
-            'exlimit': 'max',
-            'explaintext' : None,
-            'format': self.FORMAT
+            'format': self.FORMAT,
+            'srsearch': name,
+            'list': 'search',
         })
 
-        #if a part of the page is not specified, return the intro
-        if part == 'intro':
-            request_url += '&exintro'
-
-        response = urlopen(request_url).read()
-        response = response.decode('utf-8')
-        pages = json.loads(response)['query']['pages']
-
-        print('Finished request: ', request_url, '...')
-
-        print('WIKI: get full result -> ', pages)
-        print('WIKI: get first page -> ', pages[list(pages)[0]])
-
-        return pages[list(pages)[0]]['extract']
-
-    def search(self, name):
-        'Searches for documents with the given name.'
-
-        request_url = self.create_request({
-            'action': 'opensearch',
-            'search': name,
-            'limit': 10,
-            'format': self.FORMAT
-        })
+        print('SEARCHING FOR: ', request_url)
 
         response = urlopen(request_url).read()
         response = response.decode('utf-8')
 
-        print('Finished request: ', request_url, '...')
-        print('WIKI: search result -> ', json.loads(response))
-        return json.loads(response)
+        response = json.loads(response)
+        page_infos = response['query']['search']
+
+        page_titles = []
+        for info in page_infos:
+            should_add = True
+            title = info['title']
+            for substring in wiki_skip.TITLE_SUBSTRINGS:
+                if substring in title:
+                    should_add = False
+                    break
+
+            if should_add:
+                page_titles.append(title)
+
+        return page_titles
 
     def find(self, name):
         try:
             print('WIKI: find -> ', name)
-            search_result = self.search(name)
-            page_name = search_result[1][0]
-            return self.get(page_name)
+            page_titles = self.search(name)
+            print('A'*30)
+            print(page_titles)
+            full_text = ''
+            for title in page_titles:
+                full_text += self.get(title)
+
+            return full_text
         except IndexError as e:
-            print('WIKI SERVICE: Index error.')
+            print('WIKI SERVICE: ' + e)
             return ''
+
+    def get(self, page_title):
+        'Returns a document whose name matches the given.'
+
+        request_url = self.create_request({
+            'action': 'query',
+            'format': self.FORMAT,
+            'titles': page_title,
+            'prop': 'extracts',
+            'exlimit': 'max',
+            'explaintext': '1',
+            'redirects': '1'
+        })
+
+        response = urlopen(request_url).read()
+        response = response.decode('utf-8')
+        #print('PAGE TITLE: ', page_title)
+        pages = json.loads(response)['query']['pages']
+        #print(pages)
+
+        result_text = ''
+        for page_id in pages:
+            if len(pages[page_id]['extract']) > 0:
+                page_extract = pages[page_id]['extract']
+                headers = list(self.header_expression.finditer(page_extract))
+                result_text += page_extract[0:headers[0].span()[0]]
+                for i in range(len(headers)):
+                    current_header = headers[i]
+                    current_paragraph_index = current_header.span()[0] + 1
+                    next_header_index = len(page_extract)
+                    if i + 1 < len(headers):
+                        next_header = headers[i + 1]
+                        next_header_index = next_header.span()[0]
+
+                    if not self._should_skip_header(
+                            current_header.group(1),
+                            current_paragraph_index,
+                            next_header_index):
+                        result_text += page_extract[
+                                       current_paragraph_index
+                                       :
+                                       next_header_index]
+
+
+        print('Finished request: ', request_url, '...')
+
+        return result_text
 
     def create_request(self, params):
         request_url = self.ENDPOINT
@@ -77,3 +120,11 @@ class WikipediaService(DataService):
                 request_url += '=' + str(value)
 
         return request_url
+
+    def _should_skip_header(self, header, paragraph_index, next_header_index):
+        header = header.lower()
+        for substring in wiki_skip.SUBSTRINGS:
+            if substring in header:
+                return True
+
+        return False

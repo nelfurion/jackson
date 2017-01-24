@@ -65,11 +65,7 @@ class Chatbot:
                 answer = '\n'.join(entities_info)
 
         if topic in ['ENTY', 'DESC', 'NUM', 'LOC']:
-            results = self.data_manager.answer_from_wiki(self.tokenized_utterance)
-            if results:
-                answer = self.summarizer.summarize(3, ' '.join(results))
-            else:
-                print('NO RESULTS FRMO WIKI FOR ENTY')
+            answer = self.data_manager.answer_from_wiki(self.tokenized_utterance)
 
         if len(answer) == 0:
             answer = "I don't know. What do you think?"

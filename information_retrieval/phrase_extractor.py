@@ -3,10 +3,15 @@ from nltk.corpus import brown
 
 class PhraseExtractor:
     def extract(self, tree):
-        nouns = self._extract_nouns(tree)
-        adjectives = self._extract_adjectives(tree)
+        nouns = self.extract_nouns(tree)
+        adjectives = self.extract_adjectives(tree)
 
-        return nouns, adjectives
+        return {
+            'nouns': set(nouns[0]),
+            'noun_phrases': nouns[1],
+            'adjectives': adjectives[0],
+            'adjective_phrases': adjectives[1]
+        }
 
     def _is_used_as_noun(self, text):
         if len(text) == 1:
@@ -21,7 +26,7 @@ class PhraseExtractor:
 
         return True
 
-    def _extract_nouns(self, tree):
+    def extract_nouns(self, tree):
         nouns = set()
         noun_phrases = set()
         for node in tree:
@@ -38,13 +43,13 @@ class PhraseExtractor:
                     print('APPENDING: ', node_text)
                     noun_phrases.add(node_text)
 
-                nouns_and_phrases = self._extract_nouns(node)
+                nouns_and_phrases = self.extract_nouns(node)
                 nouns.update(nouns_and_phrases[0])
                 noun_phrases.update(nouns_and_phrases[1])
 
         return nouns, noun_phrases
 
-    def _extract_adjectives(self, tree):
+    def extract_adjectives(self, tree):
         adjectives = set()
         adjective_phrases = set()
         for node in tree:
@@ -59,7 +64,7 @@ class PhraseExtractor:
                     adjectives.add(node_text)
                     print('APPENDING: ', node_text)
 
-                adjectives_and_phrases = self._extract_adjectives(node)
+                adjectives_and_phrases = self.extract_adjectives(node)
                 adjectives.update(adjectives_and_phrases[0])
                 adjective_phrases.update(adjectives_and_phrases[1])
 

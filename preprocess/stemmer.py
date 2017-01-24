@@ -1,6 +1,9 @@
-from decorators.abstract_method import abstract_method
+import nltk.stem.snowball
 
-class Stemmer:
-    @abstract_method
+class Stemmer():
+    """Uses default nltk SnowballStemmer."""
+    def __init__(self):
+        self.stemmer = nltk.stem.snowball.SnowballStemmer("english")
+
     def stem(self, token):
-        pass
+        return self.stemmer.stem(token)

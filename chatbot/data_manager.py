@@ -1,8 +1,12 @@
 from information_retrieval.phrase_extractor import PhraseExtractor
+from information_retrieval.summarizer import Summarizer
+from preprocess.lemmatizer import Lemmatizer
+summarizer = Summarizer(Lemmatizer())
 
 class DataManager():
     ANSWER_FULL_FORMAT = '{subject} {verb} {related_nodes}'
     ANSWER_NO_RELATIONS_FORMAT = 'I know {subject}, but I don\'t know what {subject} {verb}.'
+    TITLES_PER_PHRASE = 2
 
     def __init__(self, text_processor, db_service, wiki_service, search_service, parser):
         self.text_processor = text_processor
@@ -41,10 +45,6 @@ class DataManager():
         tree = self.parser.parse_one(tokenized_sentence)
         svos = self._get_svos(tree)
 
-        search_phrases = self._get_search_phrases(tree)
-        print('S' * 30)
-        print(search_phrases)
-
         answer = None
         for svo in svos:
             print(svo)
@@ -71,15 +71,21 @@ class DataManager():
 
     def answer_from_wiki(self, tokenized_sentence):
         tree = self.parser.parse_one(tokenized_sentence)
-        search_phrases = self._get_search_phrases(tree)
-        results = []
+        nj_phrases = self._get_nj_phrases(tree)
+        search_phrases = self._get_search_phrases(nj_phrases)
 
+        page_titles = []
         for search_phrase in search_phrases:
-            info = self.wiki_service.find(search_phrase)
-            if len(info) > 0:
-                results.append(info)
+            titles = self.wiki_service.search(search_phrase)[:DataManager.TITLES_PER_PHRASE]
+            page_titles.extend(titles)
 
-        return results
+        print(page_titles)
+
+        full_text = ''
+        for title in page_titles:
+            full_text += self.wiki_service.get(title)
+
+        return summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
 
     def _is_full_svo(self, svo):
         return ('subject' in svo
@@ -156,29 +162,56 @@ class DataManager():
                 if 'VP' in node.label():
                     return self._get_noun_text(node)
 
-    def _get_search_phrases(self, tree):
+    def _get_nj_phrases(self, tree):
         phrase_extractor = PhraseExtractor()
-        nj_phrases = phrase_extractor.extract(tree)
+        return phrase_extractor.extract(tree)
 
-        for adjective in nj_phrases[1][0]:
-            print(adjective, ' ------------- ')
-            synonyms = self.text_processor.get_synonyms(adjective + '.a.01')
-            #print('ADJECTIVE: ', adjective, ' LEMMAS: ')
+    def _get_search_phrases(self, nj_phrases):
+        search_phrases = set()
 
-            #for synonym in synonyms:
-            #    print(synonym)
+        print(nj_phrases)
 
-            for noun in nj_phrases[0][0]:
-                print(noun, ' -----------')
-                nj_phrases[0][1].add(adjective + ' ' + noun)
+        noun_synonyms = set()
+        for noun in nj_phrases['nouns']:
+            synonyms = self.text_processor.get_synonyms(noun, 'n', 0.5)
+            noun_synonyms.union(synonyms)
 
-                synonyms = self.text_processor.get_synonyms(noun + '.n.01')
-            #    print('NOUN: ', noun, ' LEMMAS: ')
+        nj_phrases['nouns'].union(noun_synonyms)
 
-            #    for synonym in synonyms:
-            #        print(synonym)
+        adjective_synonyms = set()
+        for adjective in nj_phrases['adjectives']:
+            synonyms = self.text_processor.get_synonyms(adjective, 'a', 0.5)
+            adjective_synonyms.union(synonyms)
 
-        result = nj_phrases[0][0]
-        result.update(nj_phrases[0][1])
+        nj_phrases['adjectives'].union(adjective_synonyms)
 
-        return result
+        for noun in nj_phrases['nouns']:
+            search_phrases.add(noun)
+            for adjective in nj_phrases['adjectives']:
+                search_phrases.add(adjective + ' ' + noun)
+
+            for adjective_phrase in nj_phrases['adjective_phrases']:
+                search_phrases.add(adjective_phrase + ' ' + noun)
+
+        for noun_phrase in nj_phrases['noun_phrases']:
+            search_phrases.add(noun_phrase)
+            for adjective in nj_phrases['adjectives']:
+                search_phrases.add(adjective + ' ' + noun_phrase)
+
+            for adjective_phrase in nj_phrases['adjective_phrases']:
+                search_phrases.add(adjective_phrase + ' ' + noun_phrase)
+
+        print('SEARCH PHRASES')
+        print(search_phrases)
+
+        return search_phrases
+
+    def _create_score_dict(self, words, scores):
+        return {
+                'words': [
+                {
+                    'word': words[i],
+                    'score': scores[i]
+                }
+                for i in range(len(words))]
+        }

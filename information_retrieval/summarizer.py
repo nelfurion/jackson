@@ -1,7 +1,5 @@
-import nltk
-
-from nltk.corpus import stopwords
-from string import punctuation
+from preprocess.tokenizer import Tokenizer
+tokenizer = Tokenizer()
 
 class Summarizer(object):
     """
@@ -9,16 +7,19 @@ class Summarizer(object):
         Uses max_freq, and min_freq for word selection.
         Default args: min_freq=0.2, max_freq=0.8.
     """
-    def __init__(self, min_freq=0.1, max_freq=0.9):
+    def __init__(self,lemmatizer, tokenizer = tokenizer, min_freq=0.1, max_freq=0.9):
+        self.lemmatizer = lemmatizer
         self.max_freq = max_freq
         self.min_freq = min_freq
+        self.tokenizer = tokenizer
+        self.similarity_dict = {}
 
-    def summarize(self, n, text):
-        sentences = nltk.sent_tokenize(text)
-        tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
-
-        if n < 1:
+    def summarize(self, sentence_count, text):
+        if sentence_count < 1:
             raise ValueError('Number of sentences must be equal or larger than 1.')
+
+        tokenized_sentences = self._tokenize_sentences(text)
+
 
         appearances = {}
         for sentence in tokenized_sentences:
@@ -36,13 +37,97 @@ class Summarizer(object):
             if frequency <= self.max_freq and frequency >= self.min_freq:
                 frequencies[word] = frequency
 
-        top_sentences = self._get_sentences(n, tokenized_sentences, frequencies)
+        top_sentences = self._get_sentences(sentence_count, tokenized_sentences, frequencies)
 
         text = ''
         for sentence in top_sentences:
             text += ' '.join(sentence)
 
         return text
+
+    def summarize_by_input_frequency(self, sentence_count, text, nj_phrases):
+        if sentence_count < 1:
+            raise ValueError('Number of sentences must be equal or larger than 1.')
+
+        nouns_count = len(nj_phrases['nouns'])
+        adjectives_count = len(nj_phrases['adjectives'])
+
+        sentence_scores = []
+        tokenized_sentences = self._tokenize_sentences(text)
+        for sentence in tokenized_sentences:
+            sentence_score = 0
+            nouns_found = set()
+            adjectives_found = set()
+            for word in sentence:
+                for adjective in nj_phrases['adjectives']:
+                    similarity = self._get_similarity(adjective, word, 'a') - 0.1
+                    sentence_score += similarity
+
+                    if similarity >= 0 and len(adjectives_found) < nouns_count:
+                        adjectives_found.add(adjective)
+
+                for noun in nj_phrases['nouns']:
+                    similarity = self._get_similarity(noun, word, 'n') - 0.1
+                    sentence_score += similarity
+
+                    if similarity >= 0 and len(nouns_found) < nouns_count:
+                        nouns_found.add(noun)
+
+            #if len(adjectives_found) >= adjectives_count\
+            #    and len(nouns_found) >= nouns_count:
+            #    sentence_score += 10
+
+            sentence_score += len(adjectives_found) + len(nouns_found)
+
+            sentence_scores.append((' '.join(sentence), sentence_score))
+
+        sentence_scores = sorted(sentence_scores, key=lambda x: x[1])
+        return sentence_scores[-sentence_count:]
+
+    def _get_similarity(self, keyword, word, function):
+        if keyword in self.similarity_dict.keys():
+
+            if word in self.similarity_dict[keyword].keys():
+                return self.similarity_dict[keyword][word]
+            else:
+                similarity = self.lemmatizer.get_similarity(keyword, word, function)
+                self.similarity_dict[keyword][word] = similarity
+
+                return similarity
+        else:
+            print('KEYWORD ', keyword, " NOT IN DICTIONARY")
+            similarity = self.lemmatizer.get_similarity(keyword, word, function)
+            self.similarity_dict[keyword] = {
+                word: similarity
+            }
+
+            print(self.similarity_dict)
+
+            return similarity
+
+    def _tokenize_sentences(self, text):
+        sentences = self.tokenizer.tokenize_sentences(text)
+        final_sentences = []
+
+        for sentence in sentences:
+            last_index = -1
+            should_add = True
+            for i in range(len(sentence)):
+                if sentence[i] == '\n':
+                    if last_index == -1:
+                        last_index = i
+                    elif i - last_index == 1:
+                        last_index = i
+                    else:
+                        should_add = False
+
+            if should_add:
+                final_sentences.append(sentence)
+
+        return [
+            self.tokenizer.tokenize_words(sentence)
+            for sentence in final_sentences
+        ]
 
     def _get_sentences(self, n, tokenized_sentences, word_frequencies):
         sentence_scores = []

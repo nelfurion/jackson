@@ -6,8 +6,8 @@ from information_retrieval.parser import Parser
 from services.wikipedia_service import WikipediaService
 from services.database_service import DatabaseService
 
-from preprocess.whitespace_tokenizer import WhiteSpaceTokenizer
-from preprocess.snowball_stemmer import SnowballStemmer
+from preprocess.tokenizer import Tokenizer
+from preprocess.stemmer import Stemmer
 from preprocess.lemmatizer import Lemmatizer
 
 from chatbot.text_processor import TextProcessor
@@ -16,8 +16,8 @@ from chatbot.config import config
 from chatbot.data_manager import  DataManager
 
 text_processor = TextProcessor(
-    WhiteSpaceTokenizer(),
-    SnowballStemmer(),
+    Tokenizer(),
+    Stemmer(),
     joblib.load(config['vectorizer']),
     Lemmatizer())
 
@@ -31,4 +31,6 @@ jackson = Chatbot(
         WikipediaService(),
         None,
         Parser.get_instance()),
-    Summarizer())
+    Summarizer(
+        Lemmatizer()
+    ))

@@ -5,7 +5,6 @@ class Parser:
     _instance = None
 
     def parse(self, tokenized_sentence):
-        print(tokenized_sentence)
         return self.parser.parse_one(tokenized_sentence)
 
     @classmethod
