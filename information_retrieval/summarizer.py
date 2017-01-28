@@ -20,7 +20,6 @@ class Summarizer(object):
 
         tokenized_sentences = self._tokenize_sentences(text)
 
-
         appearances = {}
         for sentence in tokenized_sentences:
             for word in sentence:
@@ -54,35 +53,45 @@ class Summarizer(object):
 
         sentence_scores = []
         tokenized_sentences = self._tokenize_sentences(text)
+
         for sentence in tokenized_sentences:
-            sentence_score = 0
-            nouns_found = set()
-            adjectives_found = set()
-            for word in sentence:
-                for adjective in nj_phrases['adjectives']:
-                    similarity = self._get_similarity(adjective, word, 'a') - 0.1
-                    sentence_score += similarity
+            if len(sentence) > 1:
+                # This is the minimal length for a complete sentence.
+                sentence_score = 0
+                nouns_found = set()
+                adjectives_found = set()
 
-                    if similarity >= 0 and len(adjectives_found) < nouns_count:
-                        adjectives_found.add(adjective)
+                for word in sentence:
+                    for adjective in nj_phrases['adjectives']:
+                        similarity = self._get_similarity(adjective, word, 'a') - 0.1
+                        sentence_score += similarity
 
-                for noun in nj_phrases['nouns']:
-                    similarity = self._get_similarity(noun, word, 'n') - 0.1
-                    sentence_score += similarity
+                        if similarity >= 0 and len(adjectives_found) < adjectives_count:
+                            adjectives_found.add(adjective)
 
-                    if similarity >= 0 and len(nouns_found) < nouns_count:
-                        nouns_found.add(noun)
+                    for noun in nj_phrases['nouns']:
+                        similarity = self._get_similarity(noun, word, 'n') - 0.1
+                        sentence_score += similarity
 
-            #if len(adjectives_found) >= adjectives_count\
-            #    and len(nouns_found) >= nouns_count:
-            #    sentence_score += 10
+                        if similarity >= 0 and len(nouns_found) < nouns_count:
+                            nouns_found.add(noun)
 
-            sentence_score += len(adjectives_found) + len(nouns_found)
+                sentence_score += len(adjectives_found) + len(nouns_found)
 
-            sentence_scores.append((' '.join(sentence), sentence_score))
+                sentence_end = sentence[-2] + sentence[-1]
+                full_sentence = ' '.join(sentence[0:-2]) + ' ' + sentence_end
+
+                for character in full_sentence:
+                    if character == '=':
+                        sentence_score -= 1
+
+                sentence_scores.append((full_sentence, sentence_score))
 
         sentence_scores = sorted(sentence_scores, key=lambda x: x[1])
-        return sentence_scores[-sentence_count:]
+        best_scores = sentence_scores[-sentence_count:]
+        best_sentences = [x[0] for x in best_scores]
+
+        return best_sentences
 
     def _get_similarity(self, keyword, word, function):
         if keyword in self.similarity_dict.keys():

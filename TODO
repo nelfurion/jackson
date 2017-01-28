@@ -3,12 +3,22 @@ Will Ivo have gf?
 
 ERRORS:
 Who was The Pride of the Yankees ?
+open
+    h.request(req.get_method(), req.selector, req.data, headers)
+  File "/home/nelfurion/anaconda3/envs/ml/lib/python3.5/http/client.py", line 1106, in request
+    self._send_request(method, url, body, headers)
+  File "/home/nelfurion/anaconda3/envs/ml/lib/python3.5/http/client.py", line 1141, in _send_request
+    self.putrequest(method, url, **skips)
+  File "/home/nelfurion/anaconda3/envs/ml/lib/python3.5/http/client.py", line 983, in putrequest
+    self._output(request.encode('ascii'))
+UnicodeEncodeError: 'ascii' codec can't encode character '\u2013' in position 30: ordinal not in range(128)
+
+
 What does a spermologer collect ?
 NOUN PHRASES IN WHAT DOES QUESTIONS
 What does AIDS stand for?
 What does the abbreviation AIDS stand for ?
 
-Multiple \n in wikipedia articles.
 
 Internal Server Error: /jackson/chat/
 Traceback (most recent call last):
@@ -30,3 +40,13 @@ Traceback (most recent call last):
     result_text += page_extract[0:headers[0].span()[0]]
 IndexError: list index out of range
 
+
+Multiple \n in wikipedia articles.
+
+#if len(adjectives_found) >= adjectives_count\
+            #    and len(nouns_found) >= nouns_count:
+            #    sentence_score += 10
+
+            sentence_score += len(adjectives_found) + len(nouns_found)
+
+Questions with topic HUMMAN should only get answers from the first wikipedia page.

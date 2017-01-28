@@ -33,15 +33,6 @@ class DatabaseService():
         return self.db.nodes.create(name=name, **kwargs)
 
     def get_relations(self, node, label):
-        print('DB SERVICE:')
-        print(node)
-        print(node.properties['name'])
-        print(label)
-        print(node.relationships.all())
-        for r in node.relationships.all():
-            print(r.start.properties['name'], ' ', r.type, ' ', r.end.properties['name'])
-
-        print('-'*30)
         return [rel.end.properties['name']
                 for rel
                 in node.relationships.outgoing(types=[label])]

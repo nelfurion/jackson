@@ -2,6 +2,9 @@ from sklearn.externals import joblib
 
 from information_retrieval.summarizer import Summarizer
 from information_retrieval.parser import Parser
+from information_retrieval.svo_extractor import SvoExtractor
+from information_retrieval.phrase_extractor import PhraseExtractor
+from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
 
 from services.wikipedia_service import WikipediaService
 from services.database_service import DatabaseService
@@ -30,7 +33,7 @@ jackson = Chatbot(
         DatabaseService(),
         WikipediaService(),
         None,
-        Parser.get_instance()),
-    Summarizer(
-        Lemmatizer()
-    ))
+        Parser.get_instance(),
+        SvoExtractor(text_processor, PhraseExtractor())),
+    Summarizer(Lemmatizer()),
+    NltkEntityExtractor())

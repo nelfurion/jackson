@@ -1,11 +1,10 @@
 import string
 import re
 
-from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
 from .question_types import QuestionTypes
 
 class Chatbot:
-    def __init__(self, text_processor, question_classifier, data_service, data_manager, summarizer):
+    def __init__(self, text_processor, question_classifier, data_service, data_manager, summarizer, entity_extractor):
         self.text_processor = text_processor
         self.log = ""
         self.last_utterance = ""
@@ -14,7 +13,7 @@ class Chatbot:
         self.data_service = data_service
         self.data_manager = data_manager
         self.summarizer = summarizer
-        self.entity_extractor = NltkEntityExtractor()
+        self.entity_extractor = entity_extractor
         self.remembered = False
         self.last_question_type = None
 
@@ -67,7 +66,7 @@ class Chatbot:
         if topic in ['ENTY', 'DESC', 'NUM', 'LOC'] and not answer:
             answer = self.data_manager.answer_from_wiki(self.tokenized_utterance)
 
-        if len(answer) == 0:
+        if not answer or len(answer) == 0:
             answer = "I don't know. What do you think?"
 
         return answer
@@ -96,12 +95,11 @@ class Chatbot:
         return self.entity_extractor.get_entities(self.last_utterance)
 
     def _get_question_type(self, utterance):
-        #stupid but enough for now
+        # TODO: find a way to categorize whether the question is informative or interogative
         mark = utterance[len(utterance) - 1]
         if mark == '.':
             return QuestionTypes.Declarative
         elif mark == '?':
-            #TODO: find a way to categorize whether the question is informative or interogative
             return QuestionTypes.Informative
         elif mark == '!':
             return QuestionTypes.Exclamatory
