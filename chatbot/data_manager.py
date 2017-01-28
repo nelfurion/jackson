@@ -20,7 +20,6 @@ class DataManager():
     def try_remember(self, tokenized_sentence):
         print(tokenized_sentence)
         tree = self.parser.parse(tokenized_sentence)
-        tree.draw()
         svos = self.svo_extractor.get_svos(tree)
 
         remembered = False
@@ -47,7 +46,6 @@ class DataManager():
     def try_answer(self, tokenized_sentence):
         tree = self.parser.parse(tokenized_sentence)
         svos = self.svo_extractor.get_svos(tree)
-        tree.draw()
         answer = None
         for svo in svos:
             print(svo)

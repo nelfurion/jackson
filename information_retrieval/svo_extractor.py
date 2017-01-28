@@ -21,8 +21,6 @@ class SvoExtractor():
         svos = []
         print('get_svos')
         for sentence_tree in trees:
-
-            sentence_tree.draw()
             svo = {}
             svo['verb'] = ''
             svo['subject'] = self._get_noun_text(sentence_tree)
