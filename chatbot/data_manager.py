@@ -4,7 +4,7 @@ from preprocess.lemmatizer import Lemmatizer
 summarizer = Summarizer(Lemmatizer())
 
 class DataManager():
-    ANSWER_FULL_FORMAT = '{subject} {verb} {related_nodes}'
+    ANSWER_FULL_FORMAT = '{subject} {verb} {related_nodes}.'
     ANSWER_NO_RELATIONS_FORMAT = 'I know {subject}, but I don\'t know what {subject} {verb}.'
     TITLES_PER_PHRASE = 2
 
@@ -16,6 +16,7 @@ class DataManager():
         self.parser = parser
 
     def try_remember(self, tokenized_sentence):
+        print(tokenized_sentence)
         tree = self.parser.parse(tokenized_sentence)
         tree.draw()
         svos = self._get_svos(tree)
@@ -42,9 +43,9 @@ class DataManager():
         return remembered
 
     def try_answer(self, tokenized_sentence):
-        tree = self.parser.parse_one(tokenized_sentence)
+        tree = self.parser.parse(tokenized_sentence)
         svos = self._get_svos(tree)
-
+        tree.draw()
         answer = None
         for svo in svos:
             print(svo)
@@ -56,7 +57,7 @@ class DataManager():
                     if related_nodes:
                         answer = self.ANSWER_FULL_FORMAT.format(
                             subject = svo['subject'],
-                            verb = svo['verb'],
+                            verb = svo['verb'].lower(),
                             related_nodes = ', '.join(related_nodes)
                         )
                     else:
@@ -65,12 +66,12 @@ class DataManager():
                             verb = svo['verb']
                         )
 
-        print(answer)
+        print('ANSWER: ', answer, '-'*30)
 
         return answer
 
     def answer_from_wiki(self, tokenized_sentence):
-        tree = self.parser.parse_one(tokenized_sentence)
+        tree = self.parser.parse(tokenized_sentence)
         nj_phrases = self._get_nj_phrases(tree)
         search_phrases = self._get_search_phrases(nj_phrases)
 
@@ -83,7 +84,9 @@ class DataManager():
 
         full_text = ''
         for title in page_titles:
+            print('GETTING PAGE FOR TITLE: ', title)
             full_text += self.wiki_service.get(title)
+            print('GET FINISHED: ', title)
 
         return summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
 
@@ -103,7 +106,10 @@ class DataManager():
     def _get_svos(self, bllip_tree):
         trees = self._get_S_trees(bllip_tree)
         svos = []
+        print('get_svos')
         for sentence_tree in trees:
+
+            sentence_tree.draw()
             svo = {}
             svo['verb'] = ''
             svo['subject'] = self._get_noun_text(sentence_tree)
@@ -154,13 +160,36 @@ class DataManager():
         for node in tree:
             if hasattr(node, 'label'):
                 if 'N' in node.label():
-                    return ' '.join(node.leaves())
+                    noun_subtrees = node.subtrees(self._noun_filter)
+                    noun_subtrees = sorted(noun_subtrees, key=lambda x: x.height())
+                    largest_subtree = noun_subtrees[-1]
+
+                    return ' '.join(largest_subtree.leaves())
 
         text = ''
         for node in tree:
             if hasattr(node, 'label'):
                 if 'VP' in node.label():
                     return self._get_noun_text(node)
+
+    def _noun_filter(self, tree):
+        passes = True
+        if hasattr(tree, 'label'):
+            if 'V' in tree.label():
+                return False
+
+        if type(tree) == str:
+            return True
+
+        for node in tree:
+            if hasattr(node, 'label'):
+                if 'V' in node.label():
+                    return False
+
+            passes = self._noun_filter(node)
+
+        return passes
+
 
     def _get_nj_phrases(self, tree):
         phrase_extractor = PhraseExtractor()

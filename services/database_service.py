@@ -10,7 +10,6 @@ class DatabaseService():
     def get(self, name):
         q = 'MATCH (n) WHERE n.name="' + name + '" RETURN n'
         results = self.db.query(q, returns=(client.Node))
-
         if len(results) > 0:
             return results[0][0]
 
@@ -34,6 +33,15 @@ class DatabaseService():
         return self.db.nodes.create(name=name, **kwargs)
 
     def get_relations(self, node, label):
+        print('DB SERVICE:')
+        print(node)
+        print(node.properties['name'])
+        print(label)
+        print(node.relationships.all())
+        for r in node.relationships.all():
+            print(r.start.properties['name'], ' ', r.type, ' ', r.end.properties['name'])
+
+        print('-'*30)
         return [rel.end.properties['name']
                 for rel
-                in node.relationships.all(types=[label])]
+                in node.relationships.outgoing(types=[label])]

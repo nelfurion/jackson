@@ -80,19 +80,42 @@ class WikipediaService():
         pages = json.loads(response)['query']['pages']
         #print(pages)
 
+        print('PAGES LENGTH: ', len(pages))
+
         result_text = ''
         for page_id in pages:
+
+            print('HERE 1')
+
             if len(pages[page_id]['extract']) > 0:
+                print('HERE 1.2')
                 page_extract = pages[page_id]['extract']
+                print('HERE 1.3')
                 headers = list(self.header_expression.finditer(page_extract))
+
+                print('HERE 2')
+
+                if len(headers) == 0 or len(headers[0].span()) == 0:
+                    print('HERE 3')
+                    #Page doesn't have a useful content.
+                    continue
+
+                print('HERE 4')
+
                 result_text += page_extract[0:headers[0].span()[0]]
                 for i in range(len(headers)):
                     current_header = headers[i]
                     current_paragraph_index = current_header.span()[0] + 1
                     next_header_index = len(page_extract)
+
+                    print('HERE 5')
+
                     if i + 1 < len(headers):
                         next_header = headers[i + 1]
                         next_header_index = next_header.span()[0]
+
+                        print('HERE 6')
+
 
                     if not self._should_skip_header(
                             current_header.group(1),
@@ -103,6 +126,10 @@ class WikipediaService():
                                        :
                                        next_header_index]
 
+                        print('HERE 7')
+
+                    print('HERE 8')
+            print('HERE 9')
 
         print('Finished request: ', request_url, '...')
 

@@ -1,8 +1,6 @@
 import nltk
 
-from .entity_extractor import EntityExtractor
-
-class NltkEntityExtractor(EntityExtractor):
+class NltkEntityExtractor():
     """Uses nltk to extract entities from text. Implements EntityExtractor."""
 
     def preprocess(self, text):
@@ -18,7 +16,6 @@ class NltkEntityExtractor(EntityExtractor):
         tagged_sentences = self.preprocess(text)
         chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=False)
         for sentence_tree in chunked_sentences:
-            #sentence_tree.draw()
             entities.extend(self.get_names_from_chunks(sentence_tree))
 
         return entities

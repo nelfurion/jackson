@@ -43,7 +43,7 @@ class Chatbot:
         print(topic)
         entities = self._get_entities()
 
-        if topic == 'HUM':
+        if topic == 'HUM' and not answer:
             entities_info = []
 
             for entity in entities:
@@ -53,7 +53,7 @@ class Chatbot:
 
             answer = '\n'.join(entities_info)
 
-        if topic == 'ABBR':
+        if topic == 'ABBR' and not answer:
             if len(entities) > 0:
                 entities_info = []
                 for entity in entities:
@@ -64,7 +64,7 @@ class Chatbot:
 
                 answer = '\n'.join(entities_info)
 
-        if topic in ['ENTY', 'DESC', 'NUM', 'LOC']:
+        if topic in ['ENTY', 'DESC', 'NUM', 'LOC'] and not answer:
             answer = self.data_manager.answer_from_wiki(self.tokenized_utterance)
 
         if len(answer) == 0:
