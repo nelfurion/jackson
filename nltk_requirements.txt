@@ -3,3 +3,4 @@ averaged_perceptron
 maxent_ne_chunker
 words
 stopwords
+wordnet
