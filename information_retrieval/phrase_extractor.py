@@ -17,7 +17,6 @@ class PhraseExtractor:
         if len(text) == 1:
             if text[-3:] == 'est':
                 most_common_usage = self._get_most_common_usage(text)
-                print(most_common_usage, ' for word ', text)
 
                 return 'NN' in most_common_usage[0]
         else:
@@ -36,11 +35,9 @@ class PhraseExtractor:
 
                 if 'NN' in node_label\
                         and self._is_used_as_noun(node_text):
-                    print('APPENDING: ', node_text)
                     nouns.add(node_text)
                 if node_label == 'NP'\
                         and self._is_used_as_noun(node_text):
-                    print('APPENDING: ', node_text)
                     noun_phrases.add(node_text)
 
                 nouns_and_phrases = self.extract_nouns(node)
@@ -59,10 +56,8 @@ class PhraseExtractor:
 
                 if node_label == 'ADJP':
                     adjective_phrases.add(node_text)
-                    print('APPENDING: ', node_text)
                 if 'JJ' in node_label:
                     adjectives.add(node_text)
-                    print('APPENDING: ', node_text)
 
                 adjectives_and_phrases = self.extract_adjectives(node)
                 adjectives.update(adjectives_and_phrases[0])

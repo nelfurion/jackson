@@ -19,7 +19,6 @@ class SvoExtractor():
     def get_svos(self, nltk_tree):
         trees = self._get_S_trees(nltk_tree)
         svos = []
-        print('get_svos')
         for sentence_tree in trees:
             svo = {}
             svo['verb'] = ''
@@ -39,6 +38,9 @@ class SvoExtractor():
                         break
 
             svos.append(svo)
+
+        print('Extracted svos:')
+        print(svos)
 
         return svos
 
@@ -114,8 +116,6 @@ class SvoExtractor():
     def get_search_phrases(self, nj_phrases):
         search_phrases = set()
 
-        print(nj_phrases)
-
         noun_synonyms = set()
         for noun in nj_phrases['nouns']:
             synonyms = self.text_processor.get_synonyms(noun, 'n', 0.5)
@@ -146,7 +146,10 @@ class SvoExtractor():
             for adjective_phrase in nj_phrases['adjective_phrases']:
                 search_phrases.add(adjective_phrase + ' ' + noun_phrase)
 
-        print('SEARCH PHRASES')
+        print('Extracted noun and adjective phrases:')
+        print(nj_phrases)
+
+        print('Searching for:')
         print(search_phrases)
 
         return search_phrases

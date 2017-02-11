@@ -4,15 +4,15 @@ import re
 from .question_types import QuestionTypes
 
 class Chatbot:
-    def __init__(self, text_processor, question_classifier, data_service, data_manager, summarizer, entity_extractor):
+    TITLES_PER_PHRASE = 2
+
+    def __init__(self, text_processor, question_classifier, data_manager, entity_extractor):
         self.text_processor = text_processor
         self.log = ""
         self.last_utterance = ""
         self.tokenized_utterance = []
         self.question_classifier = question_classifier
-        self.data_service = data_service
         self.data_manager = data_manager
-        self.summarizer = summarizer
         self.entity_extractor = entity_extractor
         self.remembered = False
         self.last_question_type = None
@@ -44,11 +44,19 @@ class Chatbot:
 
         if topic in ['HUM', 'ABBR'] and not answer:
             entities = self._get_entities()
-            answer = self.data_manager.answer_from_wiki(entities, topic)
+            if entities:
+                answer = self.data_manager.answer_from_wiki(
+                    search_phrases=entities,
+                    titles_per_phrase=1,
+                    only_intro=True)
 
-        if topic in ['ENTY', 'DESC', 'NUM', 'LOC'] and not answer:
-            phrases = self.data_manager.get_search_phrases(self.tokenized_utterance)
-            answer = self.data_manager.answer_from_wiki(phrases, topic)
+        if topic in ['ENTY', 'DESC', 'NUM', 'LOC'] or not answer:
+            search_phrases, nj_phrases = self.data_manager.get_search_phrases(self.tokenized_utterance)
+            answer = self.data_manager.answer_from_wiki(
+                search_phrases=search_phrases,
+                titles_per_phrase=3,
+                only_intro=False,
+                nj_phrases=nj_phrases)
 
         if not answer or len(answer) == 0:
             answer = "I don't know. What do you think?"

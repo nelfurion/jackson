@@ -22,12 +22,6 @@ class Lemmatizer():
 
             return synset.lemmas()
         except WordNetError as e:
-            '''
-            print(self.ERROR_FORMAT.format(
-                error = e,
-                value = [word]
-            ))
-            '''
             return [word]
 
     def lemmatize(self, word, function):
@@ -36,28 +30,17 @@ class Lemmatizer():
             lemmas = self.lemmatizer.lemmatize(word, function)
             return lemmas
         except WordNetError as e:
-            '''
-            print(self.ERROR_FORMAT.format(
-                error = e,
-                value = word
-            ))
-            '''
             return word
 
     def get_synonyms(self, word, function, threshold):
         try:
-            print('GETTING SYNONYMS FOR: ', word, ' ', function)
             lemma = self.lemmatizer.lemmatize(word, function)
             default_synset = wn.synset(lemma + '.' + function + '.01')
-            print('default synset lemmas')
-            print(default_synset.lemma_names())
             synsets = wn.synsets(lemma)
             synonyms = []
             for synset in synsets:
 
                 path_similarity = synset.path_similarity(default_synset)
-                print(synset, ' ', path_similarity)
-                print(synset.lemma_names())
                 if path_similarity\
                         and path_similarity >= threshold\
                         and synset.pos() == function:
@@ -67,12 +50,6 @@ class Lemmatizer():
             return synonyms
 
         except WordNetError as e:
-            '''
-            print(self.ERROR_FORMAT.format(
-                error = e,
-                value = []
-            ))
-            '''
             return []
 
     def get_similarity(self, first_word, second_word, function):
@@ -80,9 +57,6 @@ class Lemmatizer():
         second_word_synset = self._get_synset(second_word, function)
 
         if not first_word_synset or not second_word_synset:
-            '''
-            print('Lemmatizer error: No synset found for word.')
-            '''
             return 0
 
         return first_word_synset.path_similarity(second_word_synset) or 0
@@ -99,13 +73,6 @@ class Lemmatizer():
                 self.synsets_dict[synset_key] = wn.synset(synset_key)
 
         except WordNetError as e:
-            '''
-            print(self.ERROR_FORMAT.format(
-                error = e,
-                value = []
-            ))
-            '''
-
             self.synsets_dict[synset_key] = None
 
         return self.synsets_dict[synset_key]
@@ -120,13 +87,6 @@ class Lemmatizer():
             try:
                 self.lemmas_dict[key] = self.lemmatizer.lemmatize(word, function)
             except WordNetError as e:
-                '''
-                print(self.ERROR_FORMAT.format(
-                    error=e,
-                    value=[]
-                ))
-                '''
-
                 self.lemmas_dict[key] = word
 
         return self.lemmas_dict[key]

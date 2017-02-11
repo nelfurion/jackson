@@ -24,16 +24,19 @@ text_processor = TextProcessor(
     joblib.load(config['vectorizer']),
     Lemmatizer())
 
+svo_extractor = SvoExtractor(text_processor, PhraseExtractor())
+summarizer = Summarizer(Lemmatizer())
+
+data_manager = DataManager(
+    text_processor,
+    DatabaseService(),
+    WikipediaService(),
+    Parser.get_instance(),
+    svo_extractor,
+    summarizer)
+
 jackson = Chatbot(
     text_processor,
     joblib.load(config['question_classifier']),
-    WikipediaService(),
-    DataManager(
-        text_processor,
-        DatabaseService(),
-        WikipediaService(),
-        None,
-        Parser.get_instance(),
-        SvoExtractor(text_processor, PhraseExtractor())),
-    Summarizer(Lemmatizer()),
+    data_manager,
     NltkEntityExtractor())

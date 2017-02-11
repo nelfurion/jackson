@@ -1,31 +1,21 @@
-from information_retrieval.phrase_extractor import PhraseExtractor
-from information_retrieval.summarizer import Summarizer
-from preprocess.lemmatizer import Lemmatizer
-
-summarizer = Summarizer(Lemmatizer())
-
 class DataManager():
     ANSWER_FULL_FORMAT = '{subject} {verb} {related_nodes}.'
     ANSWER_NO_RELATIONS_FORMAT = 'I know {subject}, but I don\'t know what {subject} {verb}.'
-    TITLES_PER_PHRASE = 2
 
-    def __init__(self, text_processor, db_service, wiki_service, search_service, parser, svo_extractor):
+    def __init__(self, text_processor, db_service, wiki_service, parser, svo_extractor, summarizer):
         self.text_processor = text_processor
         self.db_service = db_service
         self.wiki_service = wiki_service
-        self.search_service = search_service
         self.parser = parser
         self.svo_extractor = svo_extractor
+        self.summarizer = summarizer
 
     def try_remember(self, tokenized_sentence):
-        print(tokenized_sentence)
         tree = self.parser.parse(tokenized_sentence)
         svos = self.svo_extractor.get_svos(tree)
-
         remembered = False
 
         for svo in svos:
-            print(svo)
             if self.svo_extractor.is_full_svo(svo):
                 relation = self.text_processor.lemmatize(svo['verb'], 'v')
 
@@ -47,8 +37,8 @@ class DataManager():
         tree = self.parser.parse(tokenized_sentence)
         svos = self.svo_extractor.get_svos(tree)
         answer = None
+
         for svo in svos:
-            print(svo)
             if self.svo_extractor.is_full_sv(svo):
                 self.text_processor.get_lemmas(svo['verb'], 'VERB')
                 node = self.db_service.get(svo['subject'].lower())
@@ -66,7 +56,7 @@ class DataManager():
                             verb = svo['verb']
                         )
 
-        print('ANSWER: ', answer, '-'*30)
+        print('Answer from database: ', answer, '-'*30)
 
         return answer
 
@@ -78,39 +68,31 @@ class DataManager():
         return search_phrases, nj_phrases
 
     def get_text_from_wiki(self, search_phrases, only_intro = False, pages_for_phrase = 1):
-        print('ONLY INTRO: ', only_intro)
         page_titles = []
         for search_phrase in search_phrases:
             titles = self.wiki_service.search(search_phrase)[:pages_for_phrase]
             page_titles.extend(titles)
 
-        print(page_titles)
-
         full_text = ''
         for title in page_titles:
-            print('GETTING PAGE FOR TITLE: ', title)
+            print('Getting page text for title : ', title)
             full_text += self.wiki_service.get(title, only_intro)
-            print('GET FINISHED: ', title)
+            print('Get finished: ', title)
 
         return full_text
 
-    def summarize_with_phrases(self, full_text, nj_phrases):
-        sentences = summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
-        print(sentences)
-
-        return ' '.join(sentences)
-
-    def answer_from_wiki(self, phrases, topic):
+    def answer_from_wiki(self, search_phrases, titles_per_phrase, only_intro = False, nj_phrases = None):
         sentences = []
-        if topic in ['HUM', 'ABBR']:
-            full_text = self.get_text_from_wiki(phrases, True)
-            sentences = summarizer.summarize(3, full_text)
-        else:
-            search_phrases, nj_phrases = phrases
-            full_text = self.get_text_from_wiki(search_phrases, False, DataManager.TITLES_PER_PHRASE)
-            sentences = summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
+        full_text = self.get_text_from_wiki(search_phrases, only_intro, titles_per_phrase)
 
-        print(sentences)
+        if nj_phrases:
+            print('Summarizing by input frequency. This may take some time...')
+            sentences = self.summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
+        else:
+            print('Summarizing by word frequency in text. This may take some time...')
+            sentences = self.summarizer.summarize(3, full_text)
+
+        print('Summarization finished...')
 
         summary = ' '.join(sentences)
 
