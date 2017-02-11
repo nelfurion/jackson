@@ -21,33 +21,9 @@ def encode_data(parsed_data):
     first_words = [sentence.split()[0] for sentence in parsed_data['features']]
 
     features_tuple = get_pos_tags(parsed_data['features'])
-    parsed_data['features'] = features_tuple[1]
-
 
     for i in range(len(parsed_data['features'])):
-        parsed_data['features'][i] = 'a world'
-
-    '''
-    tokenized_questions = [nltk.word_tokenize(question) for question in parsed_data['features']]
-    tagged_questions = [nltk.pos_tag(question) for question in tokenized_questions]
-    ne_chunks = nltk.ne_chunk_sents(tagged_questions, binary=True)
-
-    nodes = []
-    for tree in ne_chunks:
-        question_nes = []
-        for child in tree:
-            if hasattr(child, 'label') and child.label:
-                question_nes.append(child.label())
-                if child.label() != 'NE':
-                    print(child.label())
-
-        nodes.append(question_nes)
-
-    for i in range(len(features_with_pos_tags)):
-        features_with_pos_tags[i] += ' ' + first_words[i]
-        if len(nodes[i]) > 0:
-            features_with_pos_tags[i] += ' ' + ' '.join(nodes[i])
-    '''
+        parsed_data['features'][i] += ' ' + features_tuple[1][i]
 
     return parsed_data
 
@@ -65,7 +41,7 @@ def transform_data(encoded_data, vectorizer):
 
 def load_or_train_vectorizer(vectorizer = None, train_features = None, save_file_name = None):
     if type(vectorizer) is str:
-        return joblib.load(vectorizer)
+        return joblib.load(VECTORIZERS_FOLDER + vectorizer)
 
     if save_file_name is None:
         raise ValueError('If training a vectorizer, save_file_name cannot be None.')
@@ -176,5 +152,8 @@ def save_classifier(classifier, classifier_name, accuracy, parameters = None, fo
 
     if len(folder) > 0 and folder[len(folder) - 1] != '/':
         folder += '/'
+
+    print('NAME:')
+    print(file_name)
 
     joblib.dump(classifier, CLASSIFIERS_FOLDER + folder + file_name)

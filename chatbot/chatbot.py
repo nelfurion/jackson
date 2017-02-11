@@ -40,31 +40,15 @@ class Chatbot:
         topic = self._get_topic()
         print('TOPIC: ')
         print(topic)
-        entities = self._get_entities()
 
-        if topic == 'HUM' and not answer:
-            entities_info = []
 
-            for entity in entities:
-                entity_info = self.data_service.find(entity)
-                summary = self.summarizer.summarize(3, entity_info)
-                entities_info.append(entity + '\n' + summary)
-
-            answer = '\n'.join(entities_info)
-
-        if topic == 'ABBR' and not answer:
-            if len(entities) > 0:
-                entities_info = []
-                for entity in entities:
-                    entity_info = self.data_service.find(entity)
-                    if len(entity_info) > 0:
-                        summary = self.summarizer.summarize(3, entity_info)
-                        entities_info.append(entity + '\n' + summary)
-
-                answer = '\n'.join(entities_info)
+        if topic in ['HUM', 'ABBR'] and not answer:
+            entities = self._get_entities()
+            answer = self.data_manager.answer_from_wiki(entities, topic)
 
         if topic in ['ENTY', 'DESC', 'NUM', 'LOC'] and not answer:
-            answer = self.data_manager.answer_from_wiki(self.tokenized_utterance)
+            phrases = self.data_manager.get_search_phrases(self.tokenized_utterance)
+            answer = self.data_manager.answer_from_wiki(phrases, topic)
 
         if not answer or len(answer) == 0:
             answer = "I don't know. What do you think?"
@@ -75,7 +59,12 @@ class Chatbot:
         return 'I learned that ' + self.last_utterance
 
     def _get_topic(self):
-        features = self.text_processor.vectorize(self.last_utterance)
+        tagged_words = self.text_processor.get_pos_tags(self.tokenized_utterance)
+        pos_tags = [pos for word, pos in tagged_words]
+
+        features_string = self.tokenized_utterance[0] + ' ' + ' '.join(pos_tags)
+        features = self.text_processor.vectorize(features_string)
+
         return self.question_classifier.predict(features)
 
     def _remove_punctuation(self, utterance):

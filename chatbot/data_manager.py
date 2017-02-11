@@ -70,14 +70,18 @@ class DataManager():
 
         return answer
 
-    def answer_from_wiki(self, tokenized_sentence):
+    def get_search_phrases(self, tokenized_sentence):
         tree = self.parser.parse(tokenized_sentence)
         nj_phrases = self.svo_extractor.get_nj_phrases(tree)
         search_phrases = self.svo_extractor.get_search_phrases(nj_phrases)
 
+        return search_phrases, nj_phrases
+
+    def get_text_from_wiki(self, search_phrases, only_intro = False, pages_for_phrase = 1):
+        print('ONLY INTRO: ', only_intro)
         page_titles = []
         for search_phrase in search_phrases:
-            titles = self.wiki_service.search(search_phrase)[:DataManager.TITLES_PER_PHRASE]
+            titles = self.wiki_service.search(search_phrase)[:pages_for_phrase]
             page_titles.extend(titles)
 
         print(page_titles)
@@ -85,10 +89,31 @@ class DataManager():
         full_text = ''
         for title in page_titles:
             print('GETTING PAGE FOR TITLE: ', title)
-            full_text += self.wiki_service.get(title)
+            full_text += self.wiki_service.get(title, only_intro)
             print('GET FINISHED: ', title)
 
+        return full_text
+
+    def summarize_with_phrases(self, full_text, nj_phrases):
         sentences = summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
         print(sentences)
+
         return ' '.join(sentences)
+
+    def answer_from_wiki(self, phrases, topic):
+        sentences = []
+        if topic in ['HUM', 'ABBR']:
+            full_text = self.get_text_from_wiki(phrases, True)
+            sentences = summarizer.summarize(3, full_text)
+        else:
+            search_phrases, nj_phrases = phrases
+            full_text = self.get_text_from_wiki(search_phrases, False, DataManager.TITLES_PER_PHRASE)
+            sentences = summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
+
+        print(sentences)
+
+        summary = ' '.join(sentences)
+
+        return summary
+
 

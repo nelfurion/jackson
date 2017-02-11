@@ -37,12 +37,9 @@ class Summarizer(object):
                 frequencies[word] = frequency
 
         top_sentences = self._get_sentences(sentence_count, tokenized_sentences, frequencies)
+        top_sentences = [' '.join(sentence) for sentence in top_sentences]
 
-        text = ''
-        for sentence in top_sentences:
-            text += ' '.join(sentence)
-
-        return text
+        return top_sentences
 
     def summarize_by_input_frequency(self, sentence_count, text, nj_phrases):
         if sentence_count < 1:

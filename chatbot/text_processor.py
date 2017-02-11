@@ -1,4 +1,5 @@
 import numpy
+import nltk
 
 class TextProcessor:
     def __init__(self, tokenizer, stemmer, vectorizer, lemmatizer):
@@ -26,3 +27,6 @@ class TextProcessor:
 
     def get_word_similarity(self, first, first_function, second, second_function):
         return self.lemmatizer.get_word_similarity(first, first_function, second, second_function)
+
+    def get_pos_tags(self, tokenized_sentence):
+        return nltk.pos_tag(tokenized_sentence)

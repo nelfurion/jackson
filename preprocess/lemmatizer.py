@@ -22,11 +22,12 @@ class Lemmatizer():
 
             return synset.lemmas()
         except WordNetError as e:
+            '''
             print(self.ERROR_FORMAT.format(
                 error = e,
                 value = [word]
             ))
-
+            '''
             return [word]
 
     def lemmatize(self, word, function):
@@ -35,11 +36,12 @@ class Lemmatizer():
             lemmas = self.lemmatizer.lemmatize(word, function)
             return lemmas
         except WordNetError as e:
+            '''
             print(self.ERROR_FORMAT.format(
                 error = e,
                 value = word
             ))
-
+            '''
             return word
 
     def get_synonyms(self, word, function, threshold):
@@ -65,11 +67,12 @@ class Lemmatizer():
             return synonyms
 
         except WordNetError as e:
+            '''
             print(self.ERROR_FORMAT.format(
                 error = e,
                 value = []
             ))
-
+            '''
             return []
 
     def get_similarity(self, first_word, second_word, function):
@@ -77,7 +80,9 @@ class Lemmatizer():
         second_word_synset = self._get_synset(second_word, function)
 
         if not first_word_synset or not second_word_synset:
+            '''
             print('Lemmatizer error: No synset found for word.')
+            '''
             return 0
 
         return first_word_synset.path_similarity(second_word_synset) or 0
@@ -94,10 +99,12 @@ class Lemmatizer():
                 self.synsets_dict[synset_key] = wn.synset(synset_key)
 
         except WordNetError as e:
+            '''
             print(self.ERROR_FORMAT.format(
                 error = e,
                 value = []
             ))
+            '''
 
             self.synsets_dict[synset_key] = None
 
@@ -113,10 +120,12 @@ class Lemmatizer():
             try:
                 self.lemmas_dict[key] = self.lemmatizer.lemmatize(word, function)
             except WordNetError as e:
+                '''
                 print(self.ERROR_FORMAT.format(
                     error=e,
                     value=[]
                 ))
+                '''
 
                 self.lemmas_dict[key] = word
 

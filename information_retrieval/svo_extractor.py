@@ -73,9 +73,15 @@ class SvoExtractor():
                 if 'N' in node.label():
                     noun_subtrees = node.subtrees(self._noun_filter)
                     noun_subtrees = sorted(noun_subtrees, key=lambda x: x.height())
-                    largest_subtree = noun_subtrees[-1]
 
-                    return ' '.join(largest_subtree.leaves())
+                    noun_text = ''
+                    try:
+                        largest_subtree = noun_subtrees[-1]
+                        noun_text = ' '.join(largest_subtree.leaves())
+                    except IndexError:
+                        noun_text = ''
+
+                    return noun_text
 
         text = ''
         for node in tree:

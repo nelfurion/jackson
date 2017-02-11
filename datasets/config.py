@@ -1,11 +1,15 @@
 import numpy as np
 
-#from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
 
 config = {
-    'models': [MultinomialNB()],
+    'models': [RandomForestClassifier()],
     'models_parameters': [{
-        'alpha': np.arange(0, 0.1, 0.2),
+        'n_estimators': [100],
+        'random_state': [1490702865],
+        'max_features': [1.0],
+        'oob_score': [True]
     }]
 }
