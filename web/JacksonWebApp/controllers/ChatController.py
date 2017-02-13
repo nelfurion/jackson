@@ -15,10 +15,10 @@ def handle(request):
         body_data = json.loads(request.body.decode(encoding='UTF-8'))
         user_input = body_data['user_input']
 
-        jackson.read(user_input)
+        answer = jackson.read_and_answer(user_input)
 
         return JsonResponse({
-            'answer': jackson.answer()
+            'answer': answer
         })
     else:
         return render(request, 'JacksonWebApp/chat.html')

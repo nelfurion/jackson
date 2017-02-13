@@ -30,3 +30,6 @@ class TextProcessor:
 
     def get_pos_tags(self, tokenized_sentence):
         return nltk.pos_tag(tokenized_sentence)
+
+    def stem(self, word):
+        return self.stemmer.stem(word)

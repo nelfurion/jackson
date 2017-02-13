@@ -18,14 +18,17 @@ from chatbot.chatbot import Chatbot
 from chatbot.config import config
 from chatbot.data_manager import  DataManager
 
+tokenizer = Tokenizer()
+lemmatizer = Lemmatizer()
+
 text_processor = TextProcessor(
-    Tokenizer(),
+    tokenizer,
     Stemmer(),
     joblib.load(config['vectorizer']),
-    Lemmatizer())
+    lemmatizer)
 
 svo_extractor = SvoExtractor(text_processor, PhraseExtractor())
-summarizer = Summarizer(Lemmatizer())
+summarizer = Summarizer(lemmatizer)
 
 data_manager = DataManager(
     text_processor,
@@ -39,4 +42,10 @@ jackson = Chatbot(
     text_processor,
     joblib.load(config['question_classifier']),
     data_manager,
-    NltkEntityExtractor())
+    NltkEntityExtractor(tokenizer))
+
+if __name__ == '__main__':
+    while True:
+        user_input = input('Say something: ')
+        answer = jackson.read_and_answer(user_input)
+        print('Jackson: ', answer)

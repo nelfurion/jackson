@@ -1,7 +1,3 @@
-import numpy as np
-
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
 
 config = {

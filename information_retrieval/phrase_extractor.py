@@ -66,4 +66,7 @@ class PhraseExtractor:
         return adjectives, adjective_phrases
 
     def _get_most_common_usage(self, word):
-        return nltk.FreqDist(t for w, t in brown.tagged_words() if w.lower() == word).most_common(1)
+        return nltk.FreqDist(
+                word_type for word, word_type in brown.tagged_words()
+                if word.lower() == word)\
+            .most_common(1)

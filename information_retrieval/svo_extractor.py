@@ -4,17 +4,33 @@ class SvoExtractor():
         self.text_processor = text_processor
 
     def is_full_svo(self, svo):
-        return ('subject' in svo
-                and 'verb' in svo
-                and 'object' in svo
-                and None not in svo.values())
+        is_full_svo = self.is_full_sv(svo)
+
+        if 'object' not in svo\
+                or None in svo.values():
+            is_full_svo = False
+        else:
+            if len(svo['object']) == 0:
+                is_full_svo = False
+
+        return is_full_svo
 
     def is_full_sv(self, sv):
-        return (
-                'subject' in sv
-                and 'verb' in sv
-                and sv['subject'] is not None
-                and sv['verb'] is not None)
+        is_full_sv = True
+
+        if'subject' not in sv\
+                or 'verb' not in sv\
+                or sv['subject'] is None\
+                or sv['verb'] is None:
+            is_full_sv = False
+        else:
+            values = [sv['subject'], sv['verb']]
+
+            for value in values:
+                if len(value) == 0:
+                    is_full_sv = False
+
+        return is_full_sv
 
     def get_svos(self, nltk_tree):
         trees = self._get_S_trees(nltk_tree)

@@ -111,17 +111,14 @@ class WikipediaService():
 
         for i in range(len(headers)):
             current_header = headers[i]
-            current_paragraph_index = current_header.span()[0] + 1
+            current_paragraph_index = current_header.span()[1] + 1
             next_header_index = len(page_extract)
 
             if i + 1 < len(headers):
                 next_header = headers[i + 1]
                 next_header_index = next_header.span()[0]
 
-            if not self._should_skip_header(
-                    current_header.group(1),
-                    current_paragraph_index,
-                    next_header_index):
+            if not self._should_skip_header(current_header.group(1)):
                 result_text += page_extract[
                                current_paragraph_index
                                :
@@ -156,7 +153,7 @@ class WikipediaService():
 
         return request_url
 
-    def _should_skip_header(self, header, paragraph_index, next_header_index):
+    def _should_skip_header(self, header):
         header = header.lower()
         for substring in wiki_skip.SUBSTRINGS:
             if substring in header:

@@ -9,13 +9,17 @@ class DataManager():
         self.parser = parser
         self.svo_extractor = svo_extractor
         self.summarizer = summarizer
+        self.parsed_tree = None
+        self.svos = None
+
+    def parse_input(self, tokenized_sentence):
+        self.tree = self.parser.parse(tokenized_sentence)
+        self.svos = self.svo_extractor.get_svos(self.tree)
 
     def try_remember(self, tokenized_sentence):
-        tree = self.parser.parse(tokenized_sentence)
-        svos = self.svo_extractor.get_svos(tree)
         remembered = False
 
-        for svo in svos:
+        for svo in self.svos:
             if self.svo_extractor.is_full_svo(svo):
                 relation = self.text_processor.lemmatize(svo['verb'], 'v')
 
@@ -33,12 +37,10 @@ class DataManager():
 
         return remembered
 
-    def try_answer(self, tokenized_sentence):
-        tree = self.parser.parse(tokenized_sentence)
-        svos = self.svo_extractor.get_svos(tree)
+    def answer_from_database(self, tokenized_sentence):
         answer = None
 
-        for svo in svos:
+        for svo in self.svos:
             if self.svo_extractor.is_full_sv(svo):
                 self.text_processor.get_lemmas(svo['verb'], 'VERB')
                 node = self.db_service.get(svo['subject'].lower())
@@ -56,13 +58,15 @@ class DataManager():
                             verb = svo['verb']
                         )
 
+        if answer and len(answer) > 1:
+            answer = answer.capitalize()
+
         print('Answer from database: ', answer, '-'*30)
 
         return answer
 
     def get_search_phrases(self, tokenized_sentence):
-        tree = self.parser.parse(tokenized_sentence)
-        nj_phrases = self.svo_extractor.get_nj_phrases(tree)
+        nj_phrases = self.svo_extractor.get_nj_phrases(self.tree)
         search_phrases = self.svo_extractor.get_search_phrases(nj_phrases)
 
         return search_phrases, nj_phrases
@@ -84,6 +88,8 @@ class DataManager():
     def answer_from_wiki(self, search_phrases, titles_per_phrase, only_intro = False, nj_phrases = None):
         sentences = []
         full_text = self.get_text_from_wiki(search_phrases, only_intro, titles_per_phrase)
+        if not full_text:
+            return None
 
         if nj_phrases:
             print('Summarizing by input frequency. This may take some time...')

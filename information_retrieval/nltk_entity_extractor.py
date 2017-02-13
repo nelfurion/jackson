@@ -1,11 +1,12 @@
 import nltk
 
 class NltkEntityExtractor():
-    """Uses nltk to extract entities from text. Implements EntityExtractor."""
+    def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
 
     def preprocess(self, text):
-        sentences = nltk.sent_tokenize(text)
-        tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
+        sentences = self.tokenizer.tokenize_sentences(text)
+        tokenized_sentences = [self.tokenizer.tokenize_words(sentence) for sentence in sentences]
         tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
 
         return tagged_sentences
@@ -30,6 +31,3 @@ class NltkEntityExtractor():
                     entities.extend(self.get_names_from_chunks(child))
 
         return entities
-
-    def get_dates(text):
-        pass

@@ -1,0 +1,35 @@
+==============================
+accuracy: 0.7895791583166333
+accuracy_train: 1.0
+Detailed classification report:
+The model is trained on the full development set.
+The scores are computed on the full evaluation set.
+             precision    recall  f1-score   support
+
+       ABBR       1.00      0.56      0.71         9
+       DESC       0.65      0.99      0.79       138
+       ENTY       0.75      0.68      0.72        94
+        HUM       0.92      0.83      0.87        65
+        LOC       0.91      0.73      0.81        81
+        NUM       0.99      0.68      0.80       112
+
+avg / total       0.83      0.79      0.79       499
+
+==============================
+
+==============================
+MultinomialNB accuracy: 0.6192384769539078MultinomialNB accuracy_train: 0.9822050999816547Detailed classification report:
+The model is trained on the full development set.
+The scores are computed on the full evaluation set.
+             precision    recall  f1-score   support
+
+       ABBR       1.00      0.11      0.20         9
+       DESC       0.70      0.27      0.39       138
+       ENTY       0.39      0.80      0.52        94
+        HUM       0.57      0.92      0.71        65
+        LOC       0.89      0.67      0.76        81
+        NUM       0.94      0.73      0.82       112
+
+avg / total       0.71      0.62      0.61       499
+
+==============================

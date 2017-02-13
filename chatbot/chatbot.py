@@ -1,76 +1,93 @@
 import string
 import re
 
+from nltk.corpus import stopwords
+
 from .question_types import QuestionTypes
 
 class Chatbot:
     TITLES_PER_PHRASE = 2
+    PUNCTUATIONS = string.punctuation + '?\n'
 
     def __init__(self, text_processor, question_classifier, data_manager, entity_extractor):
         self.text_processor = text_processor
-        self.log = ""
-        self.last_utterance = ""
-        self.tokenized_utterance = []
+        self.last_input = ""
+        self.tokenized_input = []
         self.question_classifier = question_classifier
         self.data_manager = data_manager
         self.entity_extractor = entity_extractor
         self.remembered = False
         self.last_question_type = None
 
-    def read(self, utterance):
-        self.last_question_type = self._get_question_type(utterance)
-        self.log += (utterance)
-        self.last_utterance = self._remove_punctuation(utterance)
-        self.tokenized_utterance = self.text_processor.tokenize(self.last_utterance)
+    def _read(self, input):
+        self.last_question_type = self._get_question_type(input)
+        self.last_input = input
+        self.tokenized_input = self.text_processor.tokenize(self.last_input)
+        self.data_manager.parse_input(self.tokenized_input)
 
         print('Last question type: ', self.last_question_type)
         if self.last_question_type == QuestionTypes.Declarative:
-            isRemembered = self.data_manager.try_remember(self.tokenized_utterance)
+            isRemembered = self.data_manager.try_remember(self.tokenized_input)
             self.remembered = isRemembered
 
-    def answer(self):
-        if (self.last_question_type == QuestionTypes.Declarative
-            and self.remembered):
+    def _answer(self):
+        if self.last_question_type == QuestionTypes.Declarative:
             return self._answer_declarative()
         elif self.last_question_type == QuestionTypes.Informative:
             return self._answer_informative()
 
+    def read_and_answer(self, input):
+        if len(input) == 0:
+            return 'You sent an empty string.'
+
+        self._read(input)
+        return self._answer()
+
     def _answer_informative(self):
-        answer = self.data_manager.try_answer(self.tokenized_utterance) or ''
+        answer = self.data_manager.answer_from_database(self.tokenized_input)
         topic = self._get_topic()
         print('TOPIC: ')
         print(topic)
 
-
         if topic in ['HUM', 'ABBR'] and not answer:
-            entities = self._get_entities()
+            entities = self.entity_extractor.get_entities(self.last_input)
             if entities:
                 answer = self.data_manager.answer_from_wiki(
                     search_phrases=entities,
                     titles_per_phrase=1,
                     only_intro=True)
 
-        if topic in ['ENTY', 'DESC', 'NUM', 'LOC'] or not answer:
-            search_phrases, nj_phrases = self.data_manager.get_search_phrases(self.tokenized_utterance)
+        if not answer:
+            search_phrases, nj_phrases = self.data_manager.get_search_phrases(self.tokenized_input)
             answer = self.data_manager.answer_from_wiki(
                 search_phrases=search_phrases,
                 titles_per_phrase=3,
                 only_intro=False,
                 nj_phrases=nj_phrases)
 
-        if not answer or len(answer) == 0:
+        if not answer or len(answer) == 0 or answer is None:
             answer = "I don't know. What do you think?"
 
         return answer
 
     def _answer_declarative(self):
-        return 'I learned that ' + self.last_utterance
+        if self.remembered:
+            return 'I learned that ' + self.last_input + '.'
+        else:
+            return 'Right back at you.'
 
     def _get_topic(self):
-        tagged_words = self.text_processor.get_pos_tags(self.tokenized_utterance)
+        tagged_words = self.text_processor.get_pos_tags(self.tokenized_input)
         pos_tags = [pos for word, pos in tagged_words]
 
-        features_string = self.tokenized_utterance[0] + ' ' + ' '.join(pos_tags)
+        word_stems = []
+        for word in self.tokenized_input:
+            if word not in stopwords.words('english')\
+                    and word not in Chatbot.PUNCTUATIONS:
+
+                word_stems.append(self.text_processor.stem(word))
+
+        features_string =  ' '.join(word_stems) + ' ' + ' '.join(pos_tags)
         features = self.text_processor.vectorize(features_string)
 
         return self.question_classifier.predict(features)
@@ -82,21 +99,9 @@ class Chatbot:
             '',
             utterance)
 
-    def _get_entities(self):
-        punctuation_exp = '[' + string.punctuation + ']'
-        re.sub(
-            punctuation_exp,
-            '',
-            self.last_utterance)
-
-        return self.entity_extractor.get_entities(self.last_utterance)
-
     def _get_question_type(self, utterance):
-        # TODO: find a way to categorize whether the question is informative or interogative
         mark = utterance[len(utterance) - 1]
         if mark == '.':
             return QuestionTypes.Declarative
-        elif mark == '?':
+        else:
             return QuestionTypes.Informative
-        elif mark == '!':
-            return QuestionTypes.Exclamatory

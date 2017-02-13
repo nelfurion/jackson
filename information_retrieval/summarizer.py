@@ -160,11 +160,6 @@ class Summarizer(object):
                         if similarity >= 0 and len(nouns_found) < nouns_count:
                             nouns_found.add(noun)
 
-                    for char in word:
-                        if char == '=':
-                            sentence_score -= 10
-
-
                 sentence_score += len(adjectives_found) + len(nouns_found)
                 sentence_scores.append((tokenized_sentences[i], i, sentence_score))
 

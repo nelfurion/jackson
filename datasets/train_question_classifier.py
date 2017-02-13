@@ -70,8 +70,8 @@ vectorizer = encode.load_or_train_vectorizer(
     vectorizer='Vectorizerngram_range=1,3;analyzer=word.pkl',
     train_features=encoded_train_data['features'])
 
-train_features, train_labels, train_sublabels = encode.transform_data(encoded_train_data, vectorizer)
-test_features, test_labels, test_sublabels = encode.transform_data(encoded_test_data, vectorizer)
+train_features, train_labels = encode.transform_data(encoded_train_data, vectorizer)
+test_features, test_labels = encode.transform_data(encoded_test_data, vectorizer)
 
 stop = timeit.default_timer()
 

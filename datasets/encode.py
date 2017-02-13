@@ -18,12 +18,10 @@ def encode_data(parsed_data):
     parsed_data: dictionary with 'features', 'labels', 'sublabels'
     '''
 
-    first_words = [sentence.split()[0] for sentence in parsed_data['features']]
-
-    features_tuple = get_pos_tags(parsed_data['features'])
+    pos_tag_strings = get_pos_tags(parsed_data['features'])
 
     for i in range(len(parsed_data['features'])):
-        parsed_data['features'][i] += ' ' + features_tuple[1][i]
+        parsed_data['features'][i] += ' ' + pos_tag_strings[i]
 
     return parsed_data
 
@@ -33,9 +31,6 @@ def tokenize(sentences_array):
 def transform_data(encoded_data, vectorizer):
     features = encoded_data['features']
     features = vectorizer.transform(features).toarray()
-
-    if 'sublabels' in encoded_data.keys():
-        return (features, encoded_data['labels'], encoded_data['sublabels'])
 
     return (features, encoded_data['labels'])
 
@@ -64,28 +59,16 @@ def train_vectorizer(vectorizer, train_features, file_name):
 def get_pos_tags(questions):
     tokenized_questions = tokenize(questions)
     tagged_questions = [nltk.pos_tag(question) for question in tokenized_questions]
-    pos_tags = []
     pos_tag_strings = []
     for i in range(len(tagged_questions)):
         question_tags = [pos for word, pos in tagged_questions[i]]
-        pos_tags.append(question_tags)
         pos_tag_strings.append(' '.join(question_tags))
 
-    return (pos_tags, pos_tag_strings)
-
-def add_position_tags(questions):
-    pos_tags = get_pos_tags(questions)[0]
-
-    for i in range(len(questions)):
-        questions[i] += ' '
-        questions[i] += ' '.join(pos_tags[i])
-
-    return questions
+    return pos_tag_strings
 
 def parse_data(file, stemmer=SnowballStemmer("english")):
     features = []
     labels = []
-    sublabels = []
 
     with open(file) as f:
         content = f.readlines()[1:]
@@ -94,7 +77,6 @@ def parse_data(file, stemmer=SnowballStemmer("english")):
             question = parts[1]
             question_types = parts[0].split(':')
             main_type = question_types[0]
-            subtype = question_types[1]
 
             words = [word for word in question.split(' ')
                         if word not in stopwords.words('english') and
@@ -106,39 +88,14 @@ def parse_data(file, stemmer=SnowballStemmer("english")):
             question = ' '.join(words)
 
             labels.append(main_type)
-            sublabels.append(subtype)
             features.append(question)
 
-            parsed_data = {
-                'features': features,
-                'labels': labels,
-                'sublabels': sublabels
-            }
-
-    return parsed_data
-
-def parse_from_json(file_name, features_field, label_field):
-    features = []
-    labels = []
-    with open(file_name, "r") as read_file:
-        for line in read_file:
-            obj = ast.literal_eval(line)
-
-            features.append(obj[features_field])
-            labels.append(obj[label_field])
-
-    return {
+    parsed_data = {
         'features': features,
-        'labels':labels
+        'labels': labels
     }
 
-def get_vectorizer_weights(vectorizer, features):
-    weights = dict(zip(vectorizer.get_feature_names(), features.data))
-    return weights
-
-def print_to_file(text, action):
-    with open("output.txt", action) as myfile:
-        myfile.write(str(text))
+    return parsed_data
 
 def save_classifier(classifier, classifier_name, accuracy, parameters = None, folder=''):
     file_name = 'q_clf_' + classifier_name + '_'
