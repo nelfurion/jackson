@@ -1,16 +1,28 @@
 {% extends 'JacksonWebApp/base.html' %}
 {% block content %}
+{% load staticfiles%}
     {% csrf_token %}
-    <div id="depression">ASDASd</div>
     <div class="row">
-        <div class="col-md-6 col-md-offset-3">
+        <div id="chat_about" class="col-md-3">
+            <p>
+                You can ask Jackson questions, and he will try to answer them.
+                If you type declarative sentences, he will try to remember the information in them
+                and after that you can ask him about it.
+            </p>
+        </div>
+        <div class="col-md-6">
             <div id="chat_chat_log" class="col-md-12 well well-lg"></div>
 
             <div class="row">
-                <input id="chat_user_input" type="text" class="col-md-9 col-md-offset-1" />
+                <input id="chat_input_field" type="text" class="col-md-9 col-md-offset-1" />
                 <button id="chat_btn_send" class="btn btn-primary col-md-1 col-md-offset-1">Send</button>
             </div>
 
         </div>
+        <div class="col-md-2">
+            <img id="img-think-bubble" class="img-responsive" src="{% static "JacksonWebApp/assets/bubble.gif" %}" />
+        </div>
+
+        <script src="{% static "JacksonWebApp/scripts/chat.js" %}"></script>
     </div>
 {% endblock %}

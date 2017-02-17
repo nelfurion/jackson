@@ -101,7 +101,11 @@ class DataManager():
         print('Summarization finished...')
 
         summary = ' '.join(sentences)
+        result = summary
 
-        return summary
+        if len(full_text) > 0 and len(summary) == 0:
+            result = 'What do you mean? Be more specific.'
+
+        return result
 
 

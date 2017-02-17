@@ -1,13 +1,22 @@
 {% extends 'JacksonWebApp/base.html' %}
 {% block content %}
+{% load staticfiles%}
     <div class="row">
-        <div class="well well-lg col-md-3 col-md-offset-2">
-            Chats Count:
-            {{statistics.chats_count}}
+        <div class="index-well well well-lg col-md-3 col-md-offset-2">
+            <p>
+                Jackson is a chatbot that uses Machine Learning and
+                Natural Language Processing to understand sentences
+                and answer questions.
+            </p>
         </div>
-        <div class="well well-lg col-md-3 col-md-offset-2">
-            Chat Logs Count:
-            {{statistics.chat_logs_count}}
+        <div class="index-well well well-lg col-md-3 col-md-offset-2">
+            <p>
+                Jackson can search for answers in a database of facts
+                and also in Wikipedia. He can also learn new information
+                from declarative sentences.
+            </p>
         </div>
+
+        <script src="{% static "JacksonWebApp/scripts/index.js" %}"></script>
     </div>
 {% endblock %}

@@ -72,7 +72,7 @@ class Chatbot:
 
     def _answer_declarative(self):
         if self.remembered:
-            return 'I learned that ' + self.last_input + '.'
+            return 'I learned that ' + self.last_input
         else:
             return 'Right back at you.'
 

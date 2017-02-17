@@ -13,6 +13,7 @@
     {% load static %}
     {% block extrahead %}
       <link href="{% static "JacksonWebApp/styles/chat.css" %}" rel="stylesheet">
+      <link href="{% static "JacksonWebApp/styles/index.css" %}" rel="stylesheet">
 
     {% endblock %}
 
@@ -23,14 +24,15 @@
     <![endif]-->
   </head>
   <body>
-    {% include 'JacksonWebApp/navigation.html' %}
-    {% block content %}
-    {% endblock %}
-
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="{% static "JacksonWebApp/scripts/chat.js" %}"></script>
+
+    <div class="container">
+      {% include 'JacksonWebApp/navigation.html' %}
+      {% block content %}
+      {% endblock %}
+    </div>
   </body>
 </html>

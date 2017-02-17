@@ -1,6 +1,10 @@
 #chat_chat_log {
     overflow: scroll;
-    height: 200px;
+    height: 400px;
+}
+
+#img-think-bubble {
+    display: none;
 }
 
 .chat_user_input, .chatbot_output {

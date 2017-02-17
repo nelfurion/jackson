@@ -58,7 +58,9 @@ class Summarizer(object):
         used_sentences = []
         sentence_tuples = []
         index = 0
-        while(len(used_sentences) < sentence_count):
+
+        while(len(used_sentences) < sentence_count
+              and index < len(scored_sentences)):
             score_tuple = scored_sentences[index]
             sentence_order_in_text = score_tuple[1]
             tokenized_sentence = score_tuple[0]
@@ -138,6 +140,7 @@ class Summarizer(object):
         nouns_count = len(nj_phrases['nouns'])
         adjectives_count = len(nj_phrases['adjectives'])
         sentence_scores = []
+
         for i in range(len(tokenized_sentences)):
             if len(tokenized_sentences[i]) > 1:
                 # This is the minimal length for a complete sentence.

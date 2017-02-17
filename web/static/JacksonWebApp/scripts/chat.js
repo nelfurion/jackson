@@ -5,7 +5,11 @@
         inputField = $('#chat_user_input'),
         row = $('<div class="row"></div>'),
         input = $('<div class="pull-right"></div>'),
-        output = $('<div></div>');
+        output = $('<div></div>'),
+        ENTER = 13;
+
+    $('nav-index').removeClass("active");
+    $('nav-chat').addClass("active");
 
     function getCookie(name) {
         var cookieValue = null;
@@ -24,20 +28,8 @@
         return cookieValue;
     }
 
-    var csrfToken = getCookie('csrftoken') || $(":input[name='csrfmiddlewaretoken']").val();
-
-    sendButton.on('click', function(event) {
-        event.preventDefault();
-
-        var inputText = inputField.val();
-        var userInput = input.clone().text(inputText);
-        var newRow = row.clone();
-        newRow
-            .addClass('chat_user_input')
-            .append(userInput);
-
-        chatLogContainer.append(newRow);
-
+    function sendRequest(inputText) {
+        $('#img-think-bubble').css('display', 'block');
         $.ajax({
             url: CHAT_ENDPOINT,
             method: 'POST',
@@ -47,15 +39,52 @@
             })
         })
         .done(function(result) {
-            console.log(result);
-            var chatbotOutput = output.clone().text(result.answer);
-            var newRow = row.clone();
+            showMessage(result.answer, false);
+            $('#img-think-bubble').css('display', 'none');
+        });
+    }
 
+    function showMessage(text, messageIsFromUser = true) {
+        var newRow = row.clone();
+        if (messageIsFromUser) {
+            var inputBox = input.clone().text(text);
+            newRow
+                .addClass('chat_user_input')
+                .append(inputBox);
+        } else {
+            var outputBox = output.clone().text(text);
             newRow
                 .addClass('chatbot_output')
-                .append(chatbotOutput);
-            chatLogContainer.append(newRow);
-        });
+                .append(outputBox);
+        }
+
+        newRow.hide();
+
+        chatLogContainer.append(newRow);
+        newRow.fadeIn("slow");
+
+        if(chatLogContainer.length)
+        chatLogContainer.scrollTop(chatLogContainer[0].scrollHeight - chatLogContainer.height());
+    }
+
+    var csrfToken = getCookie('csrftoken') || $(":input[name='csrfmiddlewaretoken']").val();
+
+    $(document).keypress(function(e) {
+        if(e.which == ENTER) {
+            var inputText = inputField.val();
+            showMessage(inputText);
+            sendRequest(inputText);
+            inputField.val('');
+        }
+    });
+
+    sendButton.on('click', function(event) {
+        event.preventDefault();
+
+        var inputText = inputField.val();
+        showMessage(inputText);
+        sendRequest(inputText);
+        inputField.val('');
     });
 
     $.ajaxSetup({
