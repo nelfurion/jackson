@@ -94,15 +94,16 @@ class WikipediaService():
     def _get_text_from_pages(self, pages):
         result_text = ''
         for page_id in pages:
-            if len(pages[page_id]['extract']) > 0:
-                page_extract = pages[page_id]['extract']
-                headers = list(self.header_expression.finditer(page_extract))
+            if 'extract' in pages[page_id].keys():
+                if len(pages[page_id]['extract']) > 0:
+                    page_extract = pages[page_id]['extract']
+                    headers = list(self.header_expression.finditer(page_extract))
 
-                if len(headers) == 0 or len(headers[0].span()) == 0:
-                    # Page doesn't have a useful content.
-                    continue
+                    if len(headers) == 0 or len(headers[0].span()) == 0:
+                        # Page doesn't have a useful content.
+                        continue
 
-                result_text += self._get_headers_content(headers, page_extract)
+                    result_text += self._get_headers_content(headers, page_extract)
 
         return result_text
 

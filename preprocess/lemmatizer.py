@@ -1,6 +1,24 @@
-from nltk.corpus import wordnet as wn
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.corpus.reader.wordnet import WordNetError
+import sys
+import importlib
+
+if 'nltk.stem.wordnet' in sys.modules:
+    wn_stem = importlib.reload(sys.modules['nltk.stem.wordnet'])
+    WordNetLemmatizer = wn_stem.WordNetLemmatizer
+else:
+    import nltk.stem.wordnet as wn_stem
+    WordNetLemmatizer = wn_stem.WordNetLemmatizer
+
+if 'nltk.corpus' in sys.modules:
+    nltk_corpus = importlib.reload(sys.modules['nltk.corpus'])
+    wn = nltk_corpus.wordnet
+else:
+    from nltk.corpus import wordnet as wn
+
+if 'nltk.corpus.reader.wordnet.WordNetError' in sys.modules:
+    wordnet_reader = importlib.reload(sys.modules['nltk.corpus.reader.wordnet.WordNetError'])
+    WordNetError = wordnet_reader.WordNetError
+else:
+    from nltk.corpus.reader.wordnet import WordNetError as WordNetError
 
 class Lemmatizer():
     ERROR_FORMAT = 'ERROR in Lemmatizer: {error}, returning {value}'
@@ -11,7 +29,7 @@ class Lemmatizer():
         #Ensuring that the wordnet corpus is loaded, so we can support multithreading
         wn.ensure_loaded()
 
-        self.lemmatizer = WordNetLemmatizer()
+        self.lemmatizer = wn_stem.WordNetLemmatizer()
         self.lemmas_dict = {}
         self.synsets_dict = {}
 
@@ -62,9 +80,14 @@ class Lemmatizer():
         if not first_word_synset or not second_word_synset:
             return 0
 
-        return first_word_synset.path_similarity(second_word_synset) or 0
+        try:
+            similarity = first_word_synset.path_similarity(second_word_synset) or 0
+            return similarity
+        except WordNetError:
+            return 0
 
     def _get_synset(self, word, part_of_speech):
+        synset_key = ''
         try:
             lemma = self._get_lemma(word, part_of_speech)
             synset_key = Lemmatizer.SYNSET_KEY_FORMAT.format(

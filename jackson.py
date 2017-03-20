@@ -1,10 +1,15 @@
 from sklearn.externals import joblib
 
 from information_retrieval.summarizer import Summarizer
+from information_retrieval.multiprocess_summarizer import MultiProcessSummarizer
 from information_retrieval.parser import Parser
 from information_retrieval.svo_extractor import SvoExtractor
 from information_retrieval.phrase_extractor import PhraseExtractor
 from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
+from information_retrieval.summarization_task import SummarizationTask
+from information_retrieval.sentence_scorer import SentenceScorer
+
+from utils.consumer import Consumer
 
 from services.wikipedia_service import WikipediaService
 from services.database_service import DatabaseService
@@ -19,32 +24,61 @@ from chatbot.config import config
 from chatbot.data_manager import  DataManager
 
 tokenizer = Tokenizer()
-lemmatizer = Lemmatizer()
+wikipedia_service = WikipediaService()
+database_service = DatabaseService()
+nltk_entity_extractor = NltkEntityExtractor(tokenizer)
 
-text_processor = TextProcessor(
-    tokenizer,
-    Stemmer(),
-    joblib.load(config['vectorizer']),
-    lemmatizer)
+def get_chatbot():
+    #lemmatizer is not thread safe
+    lemmatizer = Lemmatizer()
 
-svo_extractor = SvoExtractor(text_processor, PhraseExtractor())
-summarizer = Summarizer(lemmatizer)
+    text_processor = TextProcessor(
+        tokenizer,
+        Stemmer(),
+        joblib.load(config['vectorizer']),
+        lemmatizer)
 
-data_manager = DataManager(
-    text_processor,
-    DatabaseService(),
-    WikipediaService(),
-    Parser.get_instance(),
-    svo_extractor,
-    summarizer)
+    svo_extractor = SvoExtractor(text_processor, PhraseExtractor())
+    sentence_scorer = SentenceScorer(
+        lemmatizer,
+        tokenizer,
+        Parser.get_instance(),
+        PhraseExtractor())
 
-jackson = Chatbot(
-    text_processor,
-    joblib.load(config['question_classifier']),
-    data_manager,
-    NltkEntityExtractor(tokenizer))
+    '''
+    summarizer = Summarizer(
+        lemmatizer,
+        tokenizer,
+        sentence_scorer
+    )
+    '''
+
+    summarizer = MultiProcessSummarizer(
+        lemmatizer,
+        tokenizer,
+        sentence_scorer,
+        SummarizationTask,
+        Consumer)
+
+
+    data_manager = DataManager(
+        text_processor,
+        database_service,
+        wikipedia_service,
+        Parser.get_instance(),
+        svo_extractor,
+        summarizer)
+
+    chatbot = Chatbot(
+        text_processor,
+        joblib.load(config['question_classifier']),
+        data_manager,
+        nltk_entity_extractor)
+
+    return chatbot
 
 if __name__ == '__main__':
+    jackson = get_chatbot()
     while True:
         user_input = input('Say something: ')
         answer = jackson.read_and_answer(user_input)

@@ -71,39 +71,45 @@ class DataManager():
 
         return search_phrases, nj_phrases
 
-    def get_text_from_wiki(self, search_phrases, only_intro = False, pages_for_phrase = 1):
-        page_titles = []
+    def get_articles_from_wiki(self, search_phrases, only_intro = False, pages_for_phrase = 1):
+        page_titles = set()
         for search_phrase in search_phrases:
             titles = self.wiki_service.search(search_phrase)[:pages_for_phrase]
-            page_titles.extend(titles)
+            page_titles.update(titles)
 
-        full_text = ''
+        articles = []
         for title in page_titles:
             print('Getting page text for title : ', title)
-            full_text += self.wiki_service.get(title, only_intro)
+            page_text = self.wiki_service.get(title, only_intro)
+            article = {
+                'title': title,
+                'text': page_text
+            }
+
+            articles.append(article)
             print('Get finished: ', title)
 
-        return full_text
+        return articles
 
     def answer_from_wiki(self, search_phrases, titles_per_phrase, only_intro = False, nj_phrases = None):
         sentences = []
-        full_text = self.get_text_from_wiki(search_phrases, only_intro, titles_per_phrase)
-        if not full_text:
+        articles = self.get_articles_from_wiki(search_phrases, only_intro, titles_per_phrase)
+        if not articles:
             return None
 
         if nj_phrases:
             print('Summarizing by input frequency. This may take some time...')
-            sentences = self.summarizer.summarize_by_input_frequency(3, full_text, nj_phrases)
+            sentences = self.summarizer.summarize_by_input_frequency(3, articles, nj_phrases)
         else:
             print('Summarizing by word frequency in text. This may take some time...')
-            sentences = self.summarizer.summarize(3, full_text)
+            sentences = self.summarizer.summarize_by_content_frequency(3, articles)
 
         print('Summarization finished...')
 
         summary = ' '.join(sentences)
         result = summary
 
-        if len(full_text) > 0 and len(summary) == 0:
+        if len(articles) > 0 and len(summary) == 0:
             result = 'What do you mean? Be more specific.'
 
         return result
