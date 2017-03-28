@@ -12,7 +12,7 @@ from information_retrieval.sentence_scorer import SentenceScorer
 from utils.consumer import Consumer
 
 from services.wikipedia_service import WikipediaService
-from services.database_service import DatabaseService
+from services.neo4j_service import Neo4jService
 
 from preprocess.tokenizer import Tokenizer
 from preprocess.stemmer import Stemmer
@@ -25,7 +25,7 @@ from chatbot.data_manager import  DataManager
 
 tokenizer = Tokenizer()
 wikipedia_service = WikipediaService()
-database_service = DatabaseService()
+neo4j_service = Neo4jService()
 nltk_entity_extractor = NltkEntityExtractor(tokenizer)
 
 def get_chatbot():
@@ -63,7 +63,7 @@ def get_chatbot():
 
     data_manager = DataManager(
         text_processor,
-        database_service,
+        neo4j_service,
         wikipedia_service,
         Parser.get_instance(),
         svo_extractor,

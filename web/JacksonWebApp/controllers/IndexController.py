@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views import View
+#from django.views import View
 
 def handle(request):
     statistics = {
