@@ -45,7 +45,12 @@ class Chatbot:
 
     def _answer_informative(self):
         answer = self.data_manager.answer_from_database(self.tokenized_input)
+
+        if answer:
+            return answer
+
         topic = self._get_topic(self.last_input)['topic']
+        
         print('TOPIC: ')
         print(topic)
 

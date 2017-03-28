@@ -1,106 +1,99 @@
 # Usage
-Jackson requires several packages to run:
+Jackson requires several third-party packages to run. It's easier to download some of them through Anaconda, so the first step is to download and install Anaconda/Miniconda for your platform.
 
+[Download Anaconda](https://www.continuum.io/downloads)
+
+Create a virtual environment:
 ```
-scikit-learn>=0.17.1
-numpy>=1.11.1
-scipy>=0.17.1
-nltk>=3.2.1,
-clint=0.5.1
-bllipparser
-neo4jrestclient
+conda create -n NAME python=3.5.2
 ```
 
-You can install them from 'requirements.txt' with your
-preferred package manager.
-
-Example:
-
+Activate the environment:
 ```
-PIP: pip install -r './requirements.txt'
-CONDA: conda install --file './requirements.txt'
-```
+Linux:
+source activate ENVIRONMENT_NAME
 
-Because bllipparser is not readily available for Windows, installation is easier on Linux machines.
-
-You also have to install several nltk packages, found in nltk_requirements.txt:
-```
-punkt
-averaged_perceptron
-maxent_ne_chunker
-words
-stopwords
+Windows:
+activate ENVIRONMENT_NAME
 ```
 
-You should also download the Wall Street Journal parsing model.
-
+Installing the packages:
 ```
-sudo python -m nltk.downloader bllip_wsj_no_aux
-```
-
-They can be installed from the command line like so:
-```
-python
->>> import nltk
->>> nltk.download('package_name')
+conda install --file conda-requirements.txt
+pip install -r pip-requirements.txt
 ```
 
-To start the chatbot run:
+The next step is to download the needed NLTK packages.
 
 ```
-cd ./jackson
+python download_nltk_packages.py
+```
+
+Since there is a bug when using the default bllip.py, we need to change it by starting:
+```
+bash edit_bllip.sh ENVIRONMENT_NAME
+```
+
+Talking with Jackson:
+
+1) Through the terminal:
+
+```
 python jackson.py
 ```
 
-To download the train and test data, run:
-
+2) Start the web interface:
 ```
-cd ./datasets
-sh generate_data.sh
+python ./web/manage.py runserver
 ```
-
-To train the questions classifier run:
-
-```
-cd ./datasets
-python train_question_classifier.py
-```
-
-The script will train the model, and save it in './models/classifiers/' as 'classifier_accuracy.py'.
 
 # Jackson
-Chatbot using Natural Language Processing
-
-Jackson is a chatbot using natural language processing. Jackson is not a commercial chatbot.
-It is mostly for educational purposes.
-
-Jackson is separated into 3 parts.
-
-1) Classify user input
-
-2) Building a query
-
-3) Searching and extracting information based on the query
+Jackson is a chatbot using Machine Learning and Natural Language Processing. It is not a commercial chatbot. It is mostly for educational purposes.
 
 ## 1. Input(Question) Classification
-![Progress](http://progressed.io/bar/33)
 
-I am currently using a basic classification - Naive Bayes with no feature engineering.
-The classifier works with 33.2% accuracy. It is going to be improved in the future.
+
+For the classificatio a RandomForestClassifier ensemble method is used. It achieves an accuracy of ![Progress](http://progressed.io/bar/79) (78.957).
+
 
 ## 2. Building query
 
-Currently Jackson can extract Named Entities from the text and search information for them from Wikipedia.
+Jackson answers questions by eighter searching in Wikipedia or in a factological database. The database is built on top of neo4j.
+
+To search wikipedia Jackson uses eighter the named entities extracted from the question or all the combinations of adjectives and nouns.
 
 ## 3. Information retrieval
 
-After the contents of a page(the information for a Named Entity) is received, it is summarized and shown to the user.
+If Jackson uses information from Wikipedia it is summarized to three sentences, before being shown to the user. Two types of summarization are implemented:
+1) based on the frequiencies of the words in the text_processor;
+2) based on the appearances of the adjectives and nouns from the question in the text.
 
-## Features that will eventually be implemented
+Since the second approach is usually much slower (it is used for summarization of multiple pages), a multiprocessing summarizer is used. It starts several processes which simultaneously score the sentences from different Wikipedia pages. When the scoring finishes the best three sentences are shown to the user.
+
+> User: Who is Donald Trump?
+
+> Jackson: Trump was born and raised in Queens , New York City , and earned an economics degree from the Wharton School of the University of Pennsylvania. In June 2015 , he launched his campaign for the 2016 presidential election , and quickly emerged as the front-runner among 17 candidates in the Republican primaries. He became the oldest and wealthiest person to assume the presidency , the first without prior military or government service , and the fifth elected with less than a plurality of the national popular vote.
+
+## 4. Learning new information
+
+Jackson can learn new information from declarative sentences. Example:
+
+> User: John loves Monika.
+
+> Jackson: John love monika.
+
+> User: Does Monika love John?
+
+> Jackson: I know monika, but i don't know what monika love.
+
+will generate two objects in the database: monica and john, and a connection with label love.
+
+## Features that may eventually be implemented
 
 | Features      | Implementation|
 | ------------- |:-------------:|
-| Summarization | Basic |
+| Summarization | Yes |
+| Question answer type classification | Yes |
 | Sentiment analysis | No |
 | Character | No |
 | Character analysis | No |
