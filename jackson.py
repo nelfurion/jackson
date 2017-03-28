@@ -8,11 +8,13 @@ from information_retrieval.phrase_extractor import PhraseExtractor
 from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
 from information_retrieval.summarization_task import SummarizationTask
 from information_retrieval.sentence_scorer import SentenceScorer
+from information_retrieval.topic_classifier import TopicClassifier
 
 from utils.consumer import Consumer
 
 from services.wikipedia_service import WikipediaService
 from services.neo4j_service import Neo4jService
+from services.topic_classification import TopicClassificationService
 
 from preprocess.tokenizer import Tokenizer
 from preprocess.stemmer import Stemmer
@@ -27,6 +29,7 @@ tokenizer = Tokenizer()
 wikipedia_service = WikipediaService()
 neo4j_service = Neo4jService()
 nltk_entity_extractor = NltkEntityExtractor(tokenizer)
+topic_classifier = TopicClassifier(TopicClassificationService())
 
 def get_chatbot():
     #lemmatizer is not thread safe
@@ -71,7 +74,7 @@ def get_chatbot():
 
     chatbot = Chatbot(
         text_processor,
-        joblib.load(config['question_classifier']),
+        topic_classifier,
         data_manager,
         nltk_entity_extractor)
 

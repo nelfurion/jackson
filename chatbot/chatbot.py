@@ -45,17 +45,24 @@ class Chatbot:
 
     def _answer_informative(self):
         answer = self.data_manager.answer_from_database(self.tokenized_input)
-        topic = self._get_topic()
+        topic = self._get_topic(self.last_input)['topic']
         print('TOPIC: ')
         print(topic)
 
         if topic in ['HUM', 'ABBR'] and not answer:
             entities = self.entity_extractor.get_entities(self.last_input)
+
+            print('ENTITIES:')
+            print(entities)
+
             if entities:
                 answer = self.data_manager.answer_from_wiki(
                     search_phrases=entities,
                     titles_per_phrase=1,
                     only_intro=True)
+
+                print('HUM ASNWER:')
+                print(answer)
 
         if not answer:
             search_phrases, nj_phrases = self.data_manager.get_search_phrases(self.tokenized_input)
@@ -76,28 +83,8 @@ class Chatbot:
         else:
             return 'Right back at you.'
 
-    def _get_topic(self):
-        tagged_words = self.text_processor.get_pos_tags(self.tokenized_input)
-        pos_tags = [pos for word, pos in tagged_words]
-
-        word_stems = []
-        for word in self.tokenized_input:
-            if word not in stopwords.words('english')\
-                    and word not in Chatbot.PUNCTUATIONS:
-
-                word_stems.append(self.text_processor.stem(word))
-
-        features_string =  ' '.join(word_stems) + ' ' + ' '.join(pos_tags)
-        features = self.text_processor.vectorize(features_string)
-
-        return self.question_classifier.predict(features)
-
-    def _remove_punctuation(self, utterance):
-        punctuation_exp = '[' + string.punctuation + ']'
-        return re.sub(
-            punctuation_exp,
-            '',
-            utterance)
+    def _get_topic(self, question):
+        return self.question_classifier.predict(question)
 
     def _get_question_type(self, utterance):
         mark = utterance[len(utterance) - 1]
