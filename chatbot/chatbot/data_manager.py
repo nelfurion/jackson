@@ -113,5 +113,3 @@ class DataManager():
             result = 'What do you mean? Be more specific.'
 
         return result
-
-
