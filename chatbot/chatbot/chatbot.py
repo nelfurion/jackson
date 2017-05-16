@@ -1,5 +1,6 @@
 import string
 import re
+import time
 
 from nltk.corpus import stopwords
 
@@ -20,6 +21,7 @@ class Chatbot:
         self.last_question_type = None
 
     def _read(self, input):
+        start = time.time()
         self.last_question_type = self._get_question_type(input)
         self.last_input = input
         self.tokenized_input = self.text_processor.tokenize(self.last_input)
@@ -29,6 +31,10 @@ class Chatbot:
         if self.last_question_type == QuestionTypes.Declarative:
             isRemembered = self.data_manager.try_remember(self.tokenized_input)
             self.remembered = isRemembered
+
+        end = time.time()
+
+        print('READ TIME: ', end - start)
 
     def _answer(self):
         if self.last_question_type == QuestionTypes.Declarative:
@@ -44,15 +50,26 @@ class Chatbot:
         return self._answer()
 
     def _answer_informative(self):
+        start = time.time()
+
         answer = self.data_manager.answer_from_database(self.tokenized_input)
 
         if answer:
             return answer
 
+        end = time.time()
+
+        print('ANSWER TIME BEFORE TOPIC: ', end - start)
+
+        start = time.time()
         topic = self._get_topic(self.last_input)['topic']
         
         print('TOPIC: ')
         print(topic)
+
+        end = time.time()
+        print('TOPIC TIME: ', end - start)
+
 
         if topic in ['HUM', 'ABBR'] and not answer:
             entities = self.entity_extractor.get_entities(self.last_input)
@@ -70,10 +87,15 @@ class Chatbot:
                 print(answer)
 
         if not answer:
+            start = time.time()
             search_phrases, nj_phrases = self.data_manager.get_search_phrases(self.tokenized_input)
+            end = time.time()
+
+            print('SEARCH PHRASES TIME: ', end - start)
+
             answer = self.data_manager.answer_from_wiki(
                 search_phrases=search_phrases,
-                titles_per_phrase=3,
+                titles_per_phrase=2,
                 only_intro=False,
                 nj_phrases=nj_phrases)
 

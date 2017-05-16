@@ -32,6 +32,7 @@ class Lemmatizer():
         self.lemmatizer = wn_stem.WordNetLemmatizer()
         self.lemmas_dict = {}
         self.synsets_dict = {}
+        self.similarity_dict = {}
 
     def get_lemmas(self, word, part_of_speech):
         try:
@@ -59,8 +60,8 @@ class Lemmatizer():
             default_synset = wn.synset(lemma + '.' + part_of_speech + '.01')
             synsets = wn.synsets(lemma)
             synonyms = []
-            for synset in synsets:
 
+            for synset in synsets:
                 path_similarity = synset.path_similarity(default_synset)
                 if path_similarity\
                         and path_similarity >= threshold\
@@ -80,11 +81,20 @@ class Lemmatizer():
         if not first_word_synset or not second_word_synset:
             return 0
 
-        try:
-            similarity = first_word_synset.path_similarity(second_word_synset) or 0
-            return similarity
-        except WordNetError:
-            return 0
+        first_synset_name = first_word_synset.name()
+        second_synset_name = second_word_synset.name()
+
+        if first_synset_name not in self.similarity_dict.keys():
+            self.similarity_dict[first_synset_name] = {}
+
+        if second_synset_name not in self.similarity_dict[first_synset_name].keys():
+            try:
+                similarity = first_word_synset.path_similarity(second_word_synset) or 0
+                self.similarity_dict[first_synset_name][second_synset_name] = similarity
+            except WordNetError:
+                return 0
+
+        return self.similarity_dict[first_synset_name][second_synset_name]
 
     def _get_synset(self, word, part_of_speech):
         synset_key = ''

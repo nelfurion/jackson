@@ -100,8 +100,14 @@ class SentenceScorer:
             sentence_order_in_text = score_tuple[1]
             tokenized_sentence = score_tuple[0]
 
+            print('-' * 30)
+            print(tokenized_sentence)
+
+
             sentence_end = tokenized_sentence[-2] + tokenized_sentence[-1]
+            print(sentence_end)
             full_sentence = ' '.join(tokenized_sentence[0:-2]) + ' ' + sentence_end
+            print('-' * 30)
 
             if full_sentence not in used_sentences:
                 used_sentences.append(full_sentence)

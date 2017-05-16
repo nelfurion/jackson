@@ -1,6 +1,8 @@
 from sklearn.externals import joblib
 
 from information_retrieval.summarizer import Summarizer
+from information_retrieval.http_summarizer import HttpSummarizer
+from services.summarization_service import SummarizationService
 from information_retrieval.multiprocess_summarizer import MultiProcessSummarizer
 from information_retrieval.parser import Parser
 from information_retrieval.svo_extractor import SvoExtractor
@@ -30,6 +32,7 @@ wikipedia_service = WikipediaService()
 neo4j_service = Neo4jService()
 nltk_entity_extractor = NltkEntityExtractor(tokenizer)
 topic_classifier = TopicClassifier(TopicClassificationService())
+summarization_service = SummarizationService()
 
 def get_chatbot():
     #lemmatizer is not thread safe
@@ -56,13 +59,20 @@ def get_chatbot():
     )
     '''
 
+    summarizer = HttpSummarizer(
+        lemmatizer,
+        tokenizer,
+        sentence_scorer,
+        summarization_service)
+
+    '''
     summarizer = MultiProcessSummarizer(
         lemmatizer,
         tokenizer,
         sentence_scorer,
         SummarizationTask,
         Consumer)
-
+    '''
 
     data_manager = DataManager(
         text_processor,

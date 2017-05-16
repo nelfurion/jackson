@@ -4,17 +4,16 @@ from urllib.request import urlopen
 from .service import Service
 from .config import config
 
-class TopicClassificationService(Service):
-    """Microservice for topic classification."""
+class SummarizationService(Service):
 
-    def get_topic(self, question):
+    def summarize(self, text):
         params = {
-            "question": question
+            "text": text
         }
 
-        request_url = self._create_request(params, config['topic_classification_url'])
+        request_url = self._create_request(params, config['summarization_service_url'])
 
-        print('TOPIC URL: ', request_url)
+        print('SUMMARIZATION URL: ', request_url)
 
         response = urlopen(request_url).read()
         response = response.decode('utf-8')

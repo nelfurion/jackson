@@ -1,3 +1,5 @@
+import time
+
 class DataManager():
     ANSWER_FULL_FORMAT = '{subject} {verb} {related_nodes}.'
     ANSWER_NO_RELATIONS_FORMAT = 'I know {subject}, but I don\'t know what {subject} {verb}.'
@@ -93,13 +95,22 @@ class DataManager():
 
     def answer_from_wiki(self, search_phrases, titles_per_phrase, only_intro = False, nj_phrases = None):
         sentences = []
+        start = time.time()
         articles = self.get_articles_from_wiki(search_phrases, only_intro, titles_per_phrase)
         if not articles:
             return None
 
+        end = time.time()
+        print('GETTING ARTICLES FROM WIKI: ', end - start)
+
         if nj_phrases:
             print('Summarizing by input frequency. This may take some time...')
+            print('PHRASES: ', '='*30)
+            print(nj_phrases)
+            start = time.time()
             sentences = self.summarizer.summarize_by_input_frequency(3, articles, nj_phrases)
+            end = time.time()
+            print('SUMMARIZATION TIME: ', end - start)
         else:
             print('Summarizing by word frequency in text. This may take some time...')
             sentences = self.summarizer.summarize_by_content_frequency(3, articles)
