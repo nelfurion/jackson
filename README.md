@@ -88,6 +88,25 @@ Jackson can learn new information from declarative sentences. Example:
 
 will generate two objects in the database: monica and john, and a connection with label love.
 
+## 5. Architecture
+
+### Static View
+![Static View Diagram](http://i.imgur.com/EFzfKAW.png)
+
+Jackson uses a client, a server, Wikipedia and a Neo4J database.
+
+### How Jackson answers questions?
+
+![Question Answering Diagram](http://i.imgur.com/4FFiWxk.png)
+
+Jackson tries to find an answer for the question in it's factological database. If an answer ins't found, it searches for information in Wikipedia and uses the question answer type class to summarize the data.
+
+### Architecture
+
+![Architecture](http://i.imgur.com/qHm2AmH.png)
+
+Jackson uses a stack of Heroku servers to work. First the client sends its request to the main server. Then remote services are used for topic classification and retrieving information. If the found answer is from Wikipedia, the text from the pages is sent to a remote worker, which itself delegates tasks to remote scorers, to score it's sentences and produce a summary. The client receives the endpoint of the worker and polls to see if the job is done. When the job is done, the client takes the summary by it's job id.
+
 ## Features that may eventually be implemented
 
 | Features      | Implementation|
