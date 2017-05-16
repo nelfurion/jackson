@@ -121,13 +121,6 @@ class SentenceScorer:
 
         return sentences
 
-
-
-
-
-
-
-
     def score_titles(self, titles, query_nva):
         title_scores = []
         for title in titles:
@@ -216,12 +209,7 @@ class SentenceScorer:
         length_difference = unmatched_title_words_length - unmatched_query_words_length
         if length_difference > 0:
             score *= pow(0.1, length_difference)
-        '''
-        print('unmatched_query_words')
-        print(unmatched_query_words)
-        print('unmatched_title_words')
-        print(unmatched_title_words)
-        '''
+
         if unmatched_query_words_length != 0 and unmatched_title_words_length != 0:
             for query_word in unmatched_query_words:
                 max_similarity = 0

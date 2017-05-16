@@ -130,8 +130,10 @@ class WikipediaService():
     def _send_request(self, options):
         try:
             request_url = self._create_request(options)
+
             print('Sending request to:')
             print(request_url)
+
             response = urlopen(request_url).read()
             response = response.decode('utf-8')
             response = json.loads(response)

@@ -1,12 +1,15 @@
 (function($) {
     var CHAT_ENDPOINT = '/jackson/chat/',
+        JOB_RESULT_ENDPOINT = '/jackson/job/'
         sendButton = $('#chat_btn_send'),
         chatLogContainer = $('#chat_chat_log'),
         inputField = $('#chat_input_field'),
         row = $('<div class="row"></div>'),
         input = $('<div class="pull-right"></div>'),
         output = $('<div></div>'),
-        ENTER = 13;
+        ENTER = 13,
+        jobIds = [],
+        intervals = [];
 
     function getCookie(name) {
         var cookieValue = null;
@@ -36,11 +39,70 @@
             })
         })
         .done(function(result) {
-            showMessage(result.answer, false);
-            $('#img-think-bubble').css('display', 'none');
+            if (result.id == true) {
+                var job = {
+                    jobId: result.answer,
+                    endpoint: result.endpoint
+                };
+
+                jobIds.push(job);
+
+                var interval = setInterval(function() {
+                    var jobFound = false;
+                    for (var i = 0; i < jobIds.length; i++) {
+                        if (jobIds[i].jobId == job.jobId) {
+                            console.log('Getting job ' + job.jobId + ' ' + job.endpoint);
+                            getJobResult(job);
+                            jobFound = true;
+                            break;
+                        }
+                    }
+
+                    if (!jobFound) {
+                        for (var j = 0; j < intervals.length; j++) {
+                            if (intervals[j].jobId == job.jobId) {
+                                console.log('Interval cleared ' + job.jobId);
+                                clearInterval(intervals[j].interval);
+                            }
+                        }
+                    }
+                }, 5000);
+
+                intervals.push({
+                    interval: interval,
+                    jobId: job.jobId
+                });
+            } else {
+                showMessage(result.answer, false);
+                $('#img-think-bubble').css('display', 'none');
+            }
         })
-        .fail(function() {
-            alert( "error" );
+        .fail(function(error) {
+            console.log('ERROR');
+            console.log(error);
+        });
+    }
+
+    function getJobResult(job) {
+        $.ajax({
+            url: job.endpoint + '?id=' + job.jobId,
+            method: 'GET'
+        })
+        .done(function(result) {
+            if (result.id != true) {
+                for(var i = 0; i < jobIds.length; i++) {
+                    if(jobIds[i].jobId == job.jobId) {
+                        jobIds.splice(i, 1);
+                    }
+                }
+
+                showMessage(result.answer.join(' '), false);
+                $('#img-think-bubble').css('display', 'none');
+            }
+        })
+        .fail(function(error) {
+            console.log('ERROR');
+            console.log(error);
         });
     }
 

@@ -14,8 +14,6 @@ class TopicClassificationService(Service):
 
         request_url = self._create_request(params, config['topic_classification_url'])
 
-        print('TOPIC URL: ', request_url)
-
         response = urlopen(request_url).read()
         response = response.decode('utf-8')
         response = json.loads(response)

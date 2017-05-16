@@ -55,9 +55,6 @@ class SvoExtractor():
 
             svos.append(svo)
 
-        print('Extracted svos:')
-        print(svos)
-
         return svos
 
     def _get_S_trees(self, bllip_tree):

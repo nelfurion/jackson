@@ -1,15 +1,10 @@
 import string
-import re
 import time
 
-from nltk.corpus import stopwords
-
 from .question_types import QuestionTypes
+from .config import config
 
 class Chatbot:
-    TITLES_PER_PHRASE = 2
-    PUNCTUATIONS = string.punctuation + '?\n'
-
     def __init__(self, text_processor, question_classifier, data_manager, entity_extractor):
         self.text_processor = text_processor
         self.last_input = ""
@@ -21,20 +16,14 @@ class Chatbot:
         self.last_question_type = None
 
     def _read(self, input):
-        start = time.time()
         self.last_question_type = self._get_question_type(input)
         self.last_input = input
         self.tokenized_input = self.text_processor.tokenize(self.last_input)
         self.data_manager.parse_input(self.tokenized_input)
 
-        print('Last question type: ', self.last_question_type)
         if self.last_question_type == QuestionTypes.Declarative:
             isRemembered = self.data_manager.try_remember(self.tokenized_input)
             self.remembered = isRemembered
-
-        end = time.time()
-
-        print('READ TIME: ', end - start)
 
     def _answer(self):
         if self.last_question_type == QuestionTypes.Declarative:
@@ -44,71 +33,48 @@ class Chatbot:
 
     def read_and_answer(self, input):
         if len(input) == 0:
-            return 'You sent an empty string.'
+            return config['response_empty_string']
 
         self._read(input)
         return self._answer()
 
     def _answer_informative(self):
-        start = time.time()
-
         answer = self.data_manager.answer_from_database(self.tokenized_input)
 
         if answer:
             return answer
 
-        end = time.time()
-
-        print('ANSWER TIME BEFORE TOPIC: ', end - start)
-
-        start = time.time()
         topic = self._get_topic(self.last_input)['topic']
-        
-        print('TOPIC: ')
-        print(topic)
-
-        end = time.time()
-        print('TOPIC TIME: ', end - start)
-
 
         if topic in ['HUM', 'ABBR'] and not answer:
             entities = self.entity_extractor.get_entities(self.last_input)
 
-            print('ENTITIES:')
-            print(entities)
-
             if entities:
                 answer = self.data_manager.answer_from_wiki(
                     search_phrases=entities,
-                    titles_per_phrase=1,
+                    titles_per_phrase=config['titles_per_phrase_human'],
                     only_intro=True)
 
-                print('HUM ASNWER:')
-                print(answer)
-
         if not answer:
-            start = time.time()
             search_phrases, nj_phrases = self.data_manager.get_search_phrases(self.tokenized_input)
-            end = time.time()
-
-            print('SEARCH PHRASES TIME: ', end - start)
 
             answer = self.data_manager.answer_from_wiki(
                 search_phrases=search_phrases,
-                titles_per_phrase=2,
+                titles_per_phrase=config['titles_per_phrase_other'],
                 only_intro=False,
                 nj_phrases=nj_phrases)
 
         if not answer or len(answer) == 0 or answer is None:
-            answer = "I don't know. What do you think?"
+            answer = config['response_default']
 
         return answer
 
     def _answer_declarative(self):
         if self.remembered:
-            return 'I learned that ' + self.last_input
+            return config['response_learned'].format(
+                info=self.last_input)
         else:
-            return 'Right back at you.'
+            return config['response_not_learned']
 
     def _get_topic(self, question):
         return self.question_classifier.predict(question)

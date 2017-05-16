@@ -55,9 +55,6 @@ class Summarizer(object):
 
         sentence_scores = self.sentence_scorer.score_sentences_by_input_phrases(text, 'all pages', nj_phrases)
 
-        print('BEST SENTENCES')
-        print(sentence_scores)
-
         best_sentences = self.sentence_scorer.get_best_unique_sentences(sentence_scores, sentence_count)
 
         return best_sentences

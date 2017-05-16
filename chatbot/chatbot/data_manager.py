@@ -1,5 +1,3 @@
-import time
-
 class DataManager():
     ANSWER_FULL_FORMAT = '{subject} {verb} {related_nodes}.'
     ANSWER_NO_RELATIONS_FORMAT = 'I know {subject}, but I don\'t know what {subject} {verb}.'
@@ -63,8 +61,6 @@ class DataManager():
         if answer and len(answer) > 1:
             answer = answer.capitalize()
 
-        print('Answer from database: ', answer, '-'*30)
-
         return answer
 
     def get_search_phrases(self, tokenized_sentence):
@@ -81,7 +77,6 @@ class DataManager():
 
         articles = []
         for title in page_titles:
-            print('Getting page text for title : ', title)
             page_text = self.wiki_service.get(title, only_intro)
             article = {
                 'title': title,
@@ -89,38 +84,31 @@ class DataManager():
             }
 
             articles.append(article)
-            print('Get finished: ', title)
 
         return articles
 
     def answer_from_wiki(self, search_phrases, titles_per_phrase, only_intro = False, nj_phrases = None):
-        sentences = []
-        start = time.time()
+        summarization_result = []
         articles = self.get_articles_from_wiki(search_phrases, only_intro, titles_per_phrase)
         if not articles:
             return None
 
-        end = time.time()
-        print('GETTING ARTICLES FROM WIKI: ', end - start)
-
         if nj_phrases:
             print('Summarizing by input frequency. This may take some time...')
-            print('PHRASES: ', '='*30)
-            print(nj_phrases)
-            start = time.time()
-            sentences = self.summarizer.summarize_by_input_frequency(3, articles, nj_phrases)
-            end = time.time()
-            print('SUMMARIZATION TIME: ', end - start)
+            summarization_result = self.summarizer.summarize_by_input_frequency(3, articles, nj_phrases)
         else:
             print('Summarizing by word frequency in text. This may take some time...')
-            sentences = self.summarizer.summarize_by_content_frequency(3, articles)
+            summarization_result = self.summarizer.summarize_by_content_frequency(3, articles)
 
         print('Summarization finished...')
 
-        summary = ' '.join(sentences)
-        result = summary
+        if isinstance(summarization_result, tuple):
+            return summarization_result
+        else:
+            summary = ' '.join(summarization_result)
+            result = summary
 
-        if len(articles) > 0 and len(summary) == 0:
-            result = 'What do you mean? Be more specific.'
+            if len(articles) > 0 and len(summary) == 0:
+                result = 'What do you mean? Be more specific.'
 
         return result

@@ -1,0 +1,8 @@
+# bin/post_compile
+#!/usr/bin/env bash
+
+rm /app/.heroku/python/lib/python3.5/site-packages/nltk/parse/bllip.py
+echo "-----> Removing old BllipParser file done"
+mv bin/bllip.py /app/.heroku/python/lib/python3.5/site-packages/nltk/parse/bllip.py
+echo "-----> Copying new file done."
+

@@ -20,5 +20,7 @@ config = {
         'https://pacific-badlands-42680.herokuapp.com/score/',
         'https://morning-peak-76247.herokuapp.com/score/',
         'https://ancient-dusk-77717.herokuapp.com/score/'
-    ]
+    ],
+    'summarization_worker_endpoint': 'https://evening-headland-66628.herokuapp.com/summarization/summarize/',
+    'summarization_job_endpoint': 'https://evening-headland-66628.herokuapp.com/summarization/summary/'
 }

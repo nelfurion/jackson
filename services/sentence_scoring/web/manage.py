@@ -2,7 +2,12 @@
 import os
 import sys
 
+from nltk.corpus import wordnet as wn
+
+
 if __name__ == "__main__":
+    wn.ensure_loaded()
+    print('CALLED')
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
     try:
         from django.core.management import execute_from_command_line

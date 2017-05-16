@@ -5,6 +5,7 @@ from .service import Service
 from .config import config
 
 class SummarizationService(Service):
+    """Microservice for text summarization."""
 
     def summarize(self, text):
         params = {
@@ -12,8 +13,6 @@ class SummarizationService(Service):
         }
 
         request_url = self._create_request(params, config['summarization_service_url'])
-
-        print('SUMMARIZATION URL: ', request_url)
 
         response = urlopen(request_url).read()
         response = response.decode('utf-8')

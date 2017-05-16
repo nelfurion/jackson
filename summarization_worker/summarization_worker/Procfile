@@ -1,0 +1,2 @@
+web: gunicorn summarization_worker.wsgi --pythonpath ./web --log-file -
+worker: python worker.py

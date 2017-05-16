@@ -3,7 +3,6 @@ from preprocess.lemmatizer import Lemmatizer
 from preprocess.tokenizer import Tokenizer
 from .phrase_extractor import PhraseExtractor
 from .parser import Parser
-from chatbot.text_processor import TextProcessor
 
 import sys
 import importlib
@@ -27,8 +26,6 @@ class SummarizationTask:
         title_nj_phrases = sentence_scorer.get_title_phrases(self.arguments['title'])
         title_score_and_matches = sentence_scorer.score_title(title_nj_phrases, self.arguments['nj_phrases'])
         title_score = title_score_and_matches[0]
-
-        print('TITLE SCORE FOR ', self.arguments['title'], ' = ', title_score)
 
         for i in range(len(result)):
             old_tuple = result[i]
