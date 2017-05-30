@@ -7,6 +7,10 @@
     display: none;
 }
 
+#img-error {
+    display: none;
+}
+
 .chat_user_input, .chatbot_output {
     margin-bottom: 10px;
 }

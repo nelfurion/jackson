@@ -1,9 +1,13 @@
 import math
 import multiprocessing
 import time
+import json
+import requests
 
 from requests_futures.sessions import FuturesSession
-from rq import Queue
+from rq import Queue as RqQueue
+
+from queue import *
 
 import worker
 from .preprocess.tokenizer import Tokenizer
@@ -15,9 +19,10 @@ from .sentence_scorer import SentenceScorer
 
 SENTENCES_PER_REQUEST = 10
 sentences_scores = []
+request_session = None
 
 def summarize_by_input_frequency(sentence_count, articles, nj_phrases):
-    queue = Queue(connection = worker.conn)
+    queue = RqQueue(connection = worker.conn)
 
     job = queue.enqueue(start_summarization_jobs,sentence_count,articles,nj_phrases)
 
@@ -31,16 +36,9 @@ def append_result(session, response):
         if len(sentence_scores) > 0:
             sentences_scores.extend(sentence_scores)
     except:
-        print('---------------Erorr occured in summarization...----------------')
-
+        print('Error: Could not retrieve json from score result...')
 
 def start_summarization_jobs(sentence_count, articles, nj_phrases):
-    sentence_scorer = SentenceScorer(
-        lemmatizer = Lemmatizer(),
-        tokenizer = Tokenizer(),
-        parser = Parser.get_instance(),
-        phrase_extractor = PhraseExtractor())
-
     result_lock = multiprocessing.Lock()
     endpoint_index = 0
     endpoints = config['summarization_endpoints']
@@ -57,7 +55,8 @@ def start_summarization_jobs(sentence_count, articles, nj_phrases):
 
     max_workers_count = len(articles) * SENTENCES_PER_REQUEST
     request_session = FuturesSession(max_workers=max_workers_count)
-    requests = []
+    sent_requests = Queue()
+
     for article in articles:
         page_sentences = tokenizer.tokenize_sentences(article['text'])
         body['title'] = article['title']
@@ -74,27 +73,75 @@ def start_summarization_jobs(sentence_count, articles, nj_phrases):
             page_part_request = request_session.post(
                 endpoint,
                 json=body,
-                background_callback=append_result,
-                timeout=30)
+                background_callback=append_result)
 
-            requests.append(page_part_request)
+            sent_requests.put({
+                'future': page_part_request,
+                'endpoint': endpoint,
+                'body': body,
+                'callback': append_result
+            })
 
             endpoint_index += 1
 
             if endpoint_index >= endpoints_count:
                 endpoint_index = 0
 
-    for request in requests:
-        result_lock.acquire()
+    save_results(request_session, result_lock, sent_requests)
 
-        try:
-            request.result()
+    return get_best_sentences(sentence_count)
 
-        except:
-            print('-------Error: Connection closed...-------')
-
-        result_lock.release()
+def get_best_sentences(sentence_count):
+    sentence_scorer = SentenceScorer(
+        lemmatizer=Lemmatizer(),
+        tokenizer=Tokenizer(),
+        parser=Parser.get_instance(),
+        phrase_extractor=PhraseExtractor())
 
     best_sentences = sentence_scorer.get_best_unique_sentences(sentences_scores, sentence_count)
 
     return best_sentences
+
+def save_results(session, result_lock, sent_requests):
+    while(not sent_requests.empty()):
+        request = sent_requests.get()
+        result_lock.acquire()
+        request_future = request['future']
+        request_body = request['body']
+        request_endpoint = request['endpoint']
+        request_callback = request['callback']
+
+        try:
+            result = request_future.result()
+            if ('DOCTYPE' in result.text) or (result.status_code >= 400):
+                add_request_to_queue(session, sent_requests, request_endpoint, request_body, request_callback)
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+            print_error('Timeout error')
+            add_request_to_queue(session, sent_requests, request_endpoint, request_body, request_callback)
+        except Exception as e:
+            print_error('Unexpected error')
+            add_request_to_queue(session, sent_requests, request_endpoint, request_body, request_callback)
+
+        result_lock.release()
+
+    print('RESULTS SAVED')
+
+def print_error(error):
+    error_format = 'Error: {error}...'
+    error_message = error_format.format(error=error)
+    print(error_message)
+    print('Readding request to queue...')
+
+
+def add_request_to_queue(session, queue, endpoint, body, callback):
+    request = session.post(
+        endpoint,
+        json=body,
+        background_callback=callback)
+
+    queue.put({
+        'future': request,
+        'endpoint': endpoint,
+        'body': body,
+        'callback': callback
+    })

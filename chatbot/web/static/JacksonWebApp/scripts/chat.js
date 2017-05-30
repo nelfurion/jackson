@@ -7,6 +7,8 @@
         row = $('<div class="row"></div>'),
         input = $('<div class="pull-right"></div>'),
         output = $('<div></div>'),
+        imgThink = $('#img-think-bubble'),
+        imgError = $('#img-error'),
         ENTER = 13,
         jobIds = [],
         intervals = [];
@@ -29,7 +31,9 @@
     }
 
     function sendRequest(inputText) {
-        $('#img-think-bubble').css('display', 'block');
+        imgError.css('display', 'none');
+        imgThink.css('display', 'block');
+
         $.ajax({
             url: CHAT_ENDPOINT,
             method: 'POST',
@@ -74,11 +78,12 @@
                 });
             } else {
                 showMessage(result.answer, false);
-                $('#img-think-bubble').css('display', 'none');
+                imgThink.css('display', 'none');
             }
         })
         .fail(function(error) {
-            console.log('ERROR');
+            imgThink.css('display', 'none');
+            imgError.css('display', 'block');
             console.log(error);
         });
     }
@@ -96,10 +101,8 @@
                     }
                 }
 
-                console.log(result.answer);
-
-                showMessage(result.answer, false);
-                $('#img-think-bubble').css('display', 'none');
+                showMessage(result.answer.join(' '), false);
+                imgThink.css('display', 'none');
             }
         })
         .fail(function(error) {

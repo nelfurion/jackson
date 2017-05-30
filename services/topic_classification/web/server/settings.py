@@ -25,9 +25,7 @@ SECRET_KEY = '4e^05%a-rtzu7$gem$t5af&2avfv+0(d+%81drs^)o)x=!n^=)'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'topic-classification.herokuapp.com'
-]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
