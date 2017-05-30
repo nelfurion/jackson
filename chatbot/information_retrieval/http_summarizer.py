@@ -12,8 +12,6 @@ class HttpSummarizer(Summarizer):
         self.sentence_scorer = sentence_scorer
         self.remaining_articles = 0
 
-        self.endpoints = config['summarization_endpoints']
-
     def summarize_by_input_frequency(self, sentence_count, articles, nj_phrases):
         body = {
             'noun_phrases': list(nj_phrases['noun_phrases']),

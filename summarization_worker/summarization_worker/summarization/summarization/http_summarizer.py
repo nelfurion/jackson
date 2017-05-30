@@ -1,7 +1,6 @@
 import math
 import multiprocessing
-import time
-import json
+import random
 import requests
 
 from requests_futures.sessions import FuturesSession
@@ -113,14 +112,16 @@ def save_results(session, result_lock, sent_requests):
 
         try:
             result = request_future.result()
+            print(result.text)
             if ('DOCTYPE' in result.text) or (result.status_code >= 400):
-                add_request_to_queue(session, sent_requests, request_endpoint, request_body, request_callback)
+                print_error('Request returned HTML')
+                add_request_to_queue(session, sent_requests, request_body, request_callback)
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
             print_error('Timeout error')
-            add_request_to_queue(session, sent_requests, request_endpoint, request_body, request_callback)
+            add_request_to_queue(session, sent_requests, request_body, request_callback)
         except Exception as e:
             print_error('Unexpected error')
-            add_request_to_queue(session, sent_requests, request_endpoint, request_body, request_callback)
+            add_request_to_queue(session, sent_requests, request_body, request_callback)
 
         result_lock.release()
 
@@ -133,7 +134,11 @@ def print_error(error):
     print('Readding request to queue...')
 
 
-def add_request_to_queue(session, queue, endpoint, body, callback):
+def add_request_to_queue(session, queue, body, callback):
+    endpoints_count = len(config['summarization_endpoints'])
+    endpoint_index = random.randint(0, endpoints_count - 1)
+    endpoint = config['summarization_endpoints'][endpoint_index]
+
     request = session.post(
         endpoint,
         json=body,
