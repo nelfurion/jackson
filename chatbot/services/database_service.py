@@ -1,6 +1,4 @@
-from .service import Service
-
-class DatabaseService(Service):
+class DatabaseService():
     def __init__(self):
         super().__init__()
 

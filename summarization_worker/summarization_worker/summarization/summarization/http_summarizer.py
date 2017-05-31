@@ -76,7 +76,6 @@ def start_summarization_jobs(sentence_count, articles, nj_phrases):
 
             sent_requests.put({
                 'future': page_part_request,
-                'endpoint': endpoint,
                 'body': body,
                 'callback': append_result
             })
@@ -107,7 +106,6 @@ def save_results(session, result_lock, sent_requests):
         result_lock.acquire()
         request_future = request['future']
         request_body = request['body']
-        request_endpoint = request['endpoint']
         request_callback = request['callback']
 
         try:
