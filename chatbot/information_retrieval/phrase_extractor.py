@@ -1,7 +1,7 @@
-import nltk
-from nltk.corpus import brown
-
 class PhraseExtractor:
+    def __init__(self, text_processor):
+        self.text_processor = text_processor
+
     def extract(self, tree):
         nouns = self.extract_nouns(tree)
         adjectives = self.extract_adjectives(tree)
@@ -16,7 +16,7 @@ class PhraseExtractor:
     def _is_used_as_noun(self, text):
         if len(text) == 1:
             if text[-3:] == 'est':
-                most_common_usage = self._get_most_common_usage(text)
+                most_common_usage = self.text_processor.get_most_common_usage(text)
 
                 return 'NN' in most_common_usage[0]
         else:
@@ -64,9 +64,3 @@ class PhraseExtractor:
                 adjective_phrases.update(adjectives_and_phrases[1])
 
         return adjectives, adjective_phrases
-
-    def _get_most_common_usage(self, word):
-        return nltk.FreqDist(
-                word_type for word, word_type in brown.tagged_words()
-                if word.lower() == word)\
-            .most_common(1)

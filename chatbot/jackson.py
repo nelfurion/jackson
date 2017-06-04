@@ -1,55 +1,63 @@
 from sklearn.externals import joblib
 
-from information_retrieval.summarizer import Summarizer
-from information_retrieval.http_summarizer import HttpSummarizer
-from services.summarization_service import SummarizationService
-from information_retrieval.multiprocess_summarizer import MultiProcessSummarizer
+from information_retrieval.config import config
+from information_retrieval.entity_extractor import EntityExtractor
 from information_retrieval.parser import Parser
-from information_retrieval.svo_extractor import SvoExtractor
 from information_retrieval.phrase_extractor import PhraseExtractor
-from information_retrieval.nltk_entity_extractor import NltkEntityExtractor
-from information_retrieval.summarization_task import SummarizationTask
 from information_retrieval.sentence_scorer import SentenceScorer
+from information_retrieval.http_summarizer import HttpSummarizer
+from information_retrieval.multiprocess_summarizer import MultiProcessSummarizer
+from information_retrieval.summarization_task import SummarizationTask
 from information_retrieval.topic_classifier import TopicClassifier
+from information_retrieval.svo_extractor import SvoExtractor
 
 from utils.consumer import Consumer
 
-from services.wikipedia_service import WikipediaService
-from services.neo4j_service import Neo4jService
 from services.topic_classification import TopicClassificationService
+from services.summarization_service import SummarizationService
 
-from preprocess.tokenizer import Tokenizer
-from preprocess.stemmer import Stemmer
-from preprocess.lemmatizer import Lemmatizer
-
-from chatbot.text_processor import TextProcessor
 from chatbot.chatbot import Chatbot
 from chatbot.config import config
-from chatbot.data_manager import  DataManager
+from chatbot.data_manager import DataManager
+
+from preprocess.lemmatizer import Lemmatizer
+from preprocess.stemmer import Stemmer
+from preprocess.tagged_words_corpus import TaggedWordsCorpus
+from preprocess.text_processor import TextProcessor
+from preprocess.tokenizer import Tokenizer
+
+from services.neo4j_service import Neo4jService
+from services.wikipedia_service import WikipediaService
 
 tokenizer = Tokenizer()
+stemmer = Stemmer()
 wikipedia_service = WikipediaService()
 neo4j_service = Neo4jService()
-nltk_entity_extractor = NltkEntityExtractor(tokenizer)
+
 topic_classifier = TopicClassifier(TopicClassificationService())
 summarization_service = SummarizationService()
 
+tagged_words_corpus = TaggedWordsCorpus()
+
+
+
+
 def get_chatbot():
-    #lemmatizer is not thread safe
     lemmatizer = Lemmatizer()
+    parser = Parser.get_instance()
 
     text_processor = TextProcessor(
         tokenizer,
-        Stemmer(),
+        stemmer,
         joblib.load(config['vectorizer']),
-        lemmatizer)
-
-    svo_extractor = SvoExtractor(text_processor, PhraseExtractor())
-    sentence_scorer = SentenceScorer(
         lemmatizer,
-        tokenizer,
-        Parser.get_instance(),
-        PhraseExtractor())
+        parser,
+        tagged_words_corpus)
+
+    phrase_extractor = PhraseExtractor(text_processor)
+    svo_extractor = SvoExtractor(text_processor, phrase_extractor)
+    sentence_scorer = SentenceScorer(text_processor, phrase_extractor)
+    entity_extractor = EntityExtractor(text_processor)
 
     '''
     summarizer = Summarizer(
@@ -59,26 +67,27 @@ def get_chatbot():
     )
     '''
 
+    '''
     summarizer = HttpSummarizer(
         lemmatizer,
         tokenizer,
         sentence_scorer,
         summarization_service)
-
     '''
+
     summarizer = MultiProcessSummarizer(
         lemmatizer,
         tokenizer,
         sentence_scorer,
         SummarizationTask,
         Consumer)
-    '''
+
 
     data_manager = DataManager(
         text_processor,
         neo4j_service,
         wikipedia_service,
-        Parser.get_instance(),
+        parser,
         svo_extractor,
         summarizer)
 
@@ -86,7 +95,7 @@ def get_chatbot():
         text_processor,
         topic_classifier,
         data_manager,
-        nltk_entity_extractor)
+        entity_extractor)
 
     return chatbot
 

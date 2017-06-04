@@ -1,17 +1,15 @@
-from .utils import tokenize_sentences
+import information_retrieval.utils as utils
 
 class SentenceScorer:
     DEFAULT_SIMILARITY = 0.1
 
-    def __init__(self, lemmatizer, tokenizer, parser, phrase_extractor):
+    def __init__(self, text_processor, phrase_extractor):
         self.similarity_dict = {}
-        self.lemmatizer = lemmatizer
-        self.tokenizer = tokenizer
-        self.parser = parser
+        self.text_processor = text_processor
         self.phrase_extractor = phrase_extractor
 
     def score_sentences_by_word_frequency(self, text, word_frequencies):
-        tokenized_sentences = tokenize_sentences(self.tokenizer, text)
+        tokenized_sentences = utils.tokenize_sentences(self.text_processor.tokenizer, text)
         sentence_scores = []
         for i in range(len(tokenized_sentences)):
             score = 0
@@ -24,7 +22,7 @@ class SentenceScorer:
         return sentence_scores
 
     def score_sentences_by_input_phrases(self, text, title, nj_phrases):
-        tokenized_sentences = tokenize_sentences(self.tokenizer, text)
+        tokenized_sentences = utils.tokenize_sentences(self.text_processor.tokenizer, text)
         nouns_count = len(nj_phrases['nouns'])
         adjectives_count = len(nj_phrases['adjectives'])
         sentence_scores = []
@@ -56,7 +54,7 @@ class SentenceScorer:
                         if similarity >= 0:
                             if pos_tag == 'a' and len(adjectives_found) < adjectives_count:
                                 adjectives_found.add(phrase_word)
-                            elif pos_tag =='n' and len(nouns_found) < nouns_count:
+                            elif pos_tag == 'n' and len(nouns_found) < nouns_count:
                                 nouns_found.add(phrase_word)
 
                 sentence_score += len(adjectives_found) + len(nouns_found)
@@ -64,17 +62,17 @@ class SentenceScorer:
 
         return sentence_scores
 
-    def _get_similarity(self, keyword, word, function):
+    def _get_similarity(self, keyword, word, wn_pos):
         if keyword in self.similarity_dict.keys():
             if word in self.similarity_dict[keyword].keys():
                 return self.similarity_dict[keyword][word]
             else:
-                similarity = self.lemmatizer.get_similarity(keyword, word, function)
+                similarity = self.text_processor.get_word_similarity(keyword, word, wn_pos)
                 self.similarity_dict[keyword][word] = similarity
 
                 return similarity
         else:
-            similarity = self.lemmatizer.get_similarity(keyword, word, function)
+            similarity = self.text_processor.get_word_similarity(keyword, word, wn_pos)
             self.similarity_dict[keyword] = {
                 word: similarity
             }
@@ -85,10 +83,8 @@ class SentenceScorer:
         scored_sentences = sorted(scored_sentences, key=lambda x: x[2])
         scored_sentences = list(reversed(scored_sentences))
 
-        print('ORDERED BY SCORE')
-        print(scored_sentences[0:10])
-
-        #print(scored_sentences)
+        # print('ORDERED BY SCORE')
+        # print(scored_sentences[0:10])
 
         used_sentences = []
         sentence_tuples = []
@@ -100,9 +96,8 @@ class SentenceScorer:
             sentence_order_in_text = score_tuple[1]
             tokenized_sentence = score_tuple[0]
 
-            print('-' * 30)
-            print(tokenized_sentence)
-
+            # print('-' * 30)
+            # print(tokenized_sentence)
 
             sentence_end = tokenized_sentence[-2] + tokenized_sentence[-1]
             print(sentence_end)
@@ -142,8 +137,8 @@ class SentenceScorer:
         return descending_scores
 
     def get_title_phrases(self, title):
-        tokenized_title = self.tokenizer.tokenize_words(title)
-        tree = self.parser.parse(tokenized_title)
+        tokenized_title = self.text_processor.tokenize_words(title)
+        tree = self.text_processor.parse_to_tree(tokenized_title)
         title_nva = self.phrase_extractor.extract(tree)
 
         return title_nva
@@ -194,7 +189,7 @@ class SentenceScorer:
                 query_word = query_word.lower()
                 title_word = title_word.lower()
 
-                similarity = self.lemmatizer.get_similarity(query_word, title_word, part_of_speech)
+                similarity = self.text_processor.get_word_similarity(query_word, title_word, part_of_speech)
                 if similarity == 1.0:
                     matches += 1
                     matched_words.add(title_word)
@@ -216,7 +211,7 @@ class SentenceScorer:
                 for title_word in unmatched_title_words:
                     query_word = query_word.lower()
                     title_word = title_word.lower()
-                    similarity = self.lemmatizer.get_similarity(query_word, title_word, part_of_speech)
+                    similarity = self.text_processor.get_word_similarity(query_word, title_word, part_of_speech)
                     max_similarity = max(max_similarity, similarity)
 
                     if similarity > 0:

@@ -1,13 +1,11 @@
-import nltk
-
-class NltkEntityExtractor():
-    def __init__(self, tokenizer):
-        self.tokenizer = tokenizer
+class EntityExtractor():
+    def __init__(self, text_processor):
+        self.text_processor = text_processor
 
     def preprocess(self, text):
-        sentences = self.tokenizer.tokenize_sentences(text)
-        tokenized_sentences = [self.tokenizer.tokenize_words(sentence) for sentence in sentences]
-        tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
+        sentences = self.text_processor.tokenize_sentences(text)
+        tokenized_sentences = [self.text_processor.tokenize(sentence) for sentence in sentences]
+        tagged_sentences = [self.text_processor.get_pos_tags(sentence) for sentence in tokenized_sentences]
 
         return tagged_sentences
 
@@ -15,7 +13,7 @@ class NltkEntityExtractor():
         entities = []
 
         tagged_sentences = self.preprocess(text)
-        chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=False)
+        chunked_sentences = self.text_processor.get_named_entity_chunks(tagged_sentences, binary=False)
         for sentence_tree in chunked_sentences:
             entities.extend(self.get_names_from_chunks(sentence_tree))
 

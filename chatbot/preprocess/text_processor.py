@@ -2,14 +2,19 @@ import numpy
 import nltk
 
 class TextProcessor:
-    def __init__(self, tokenizer, stemmer, vectorizer, lemmatizer):
+    def __init__(self, tokenizer, stemmer, vectorizer, lemmatizer, parser, tagged_words_corpus):
         self.tokenizer = tokenizer
         self.stemmer = stemmer
         self.vectorizer = vectorizer
         self.lemmatizer = lemmatizer
+        self.parser = parser
+        self.tagged_words_corpus = tagged_words_corpus
 
     def tokenize(self, utterance):
         return self.tokenizer.tokenize_words(utterance)
+
+    def tokenize_sentences(self, text):
+        return self.tokenizer.tokenize_sentences(text)
 
     def vectorize(self, utterance):
         vector = self.vectorizer.transform([utterance]).toarray()
@@ -33,3 +38,12 @@ class TextProcessor:
 
     def stem(self, word):
         return self.stemmer.stem(word)
+
+    def get_named_entity_chunks(self, tagged_sentences, binary):
+        return nltk.ne_chunk_sents(tagged_sentences, binary)
+
+    def get_most_common_usage(self, word):
+        return self.tagged_words_corpus.get_most_common_usage(word)
+
+    def parse_to_tree(self, text):
+        return self.parser.parse(text)

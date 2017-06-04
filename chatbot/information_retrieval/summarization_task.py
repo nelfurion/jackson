@@ -1,9 +1,3 @@
-from .sentence_scorer import SentenceScorer
-from preprocess.lemmatizer import Lemmatizer
-from preprocess.tokenizer import Tokenizer
-from .phrase_extractor import PhraseExtractor
-from .parser import Parser
-
 import sys
 import importlib
 
@@ -16,11 +10,7 @@ class SummarizationTask:
         if 'preprocess.lemmatizer' in sys.modules:
             importlib.reload(sys.modules['preprocess.lemmatizer'])
 
-        sentence_scorer = SentenceScorer(
-            Lemmatizer(),
-            Tokenizer(),
-            Parser.get_instance(),
-            PhraseExtractor())
+        sentence_scorer = self.arguments['sentence_scorer']
 
         result = sentence_scorer.score_sentences_by_input_phrases(**self.arguments)
         title_nj_phrases = sentence_scorer.get_title_phrases(self.arguments['title'])

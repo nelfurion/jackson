@@ -2,11 +2,12 @@ import multiprocessing
 
 from .summarizer import Summarizer
 
+
 class MultiProcessSummarizer(Summarizer):
     POISON_PILL = None
 
-    def __init__(self, lemmatizer, tokenizer, sentence_scorer, Task, Consumer, min_freq=0.1, max_freq=0.9):
-        super().__init__(lemmatizer, tokenizer, sentence_scorer, min_freq, max_freq)
+    def __init__(self, text_processor, sentence_scorer, Task, Consumer, min_freq=0.1, max_freq=0.9):
+        super().__init__(text_processor, sentence_scorer, min_freq, max_freq)
 
         self.consumers = []
         self.max_consumer_count = multiprocessing.cpu_count()
@@ -40,7 +41,7 @@ class MultiProcessSummarizer(Summarizer):
 
         best_sentences = self.sentence_scorer.get_best_unique_sentences(sentences_scores, sentence_count)
 
-        #Sometimes the consumers continue to live for a time, after everything else is done
+        # Sometimes the consumers continue to live for a time, after everything else is done
         self._join_consumers()
 
         print('Joined consumers.')
@@ -61,6 +62,7 @@ class MultiProcessSummarizer(Summarizer):
     def _add_tasks(self, articles, nj_phrases):
         for article in articles:
             arguments = {
+                'sentence_scorer': self.sentence_scorer,
                 'nj_phrases': nj_phrases,
                 'text': article['text'],
                 'title': article['title']

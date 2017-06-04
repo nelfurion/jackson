@@ -4,11 +4,10 @@ class Summarizer(object):
         Uses max_freq, and min_freq for word selection.
         Default args: min_freq=0.2, max_freq=0.8.
     """
-    def __init__(self, lemmatizer, tokenizer, sentence_scorer, min_freq=0.1, max_freq=0.9):
-        self.lemmatizer = lemmatizer
+    def __init__(self, text_processor, sentence_scorer, min_freq=0.1, max_freq=0.9):
+        self.text_processor = text_processor
         self.max_freq = max_freq
         self.min_freq = min_freq
-        self.tokenizer = tokenizer
         self.sentence_scorer = sentence_scorer
 
     def summarize_by_content_frequency(self, sentence_count, articles):
@@ -60,7 +59,7 @@ class Summarizer(object):
         return best_sentences
 
     def _tokenize_sentences(self, text):
-        sentences = self.tokenizer.tokenize_sentences(text)
+        sentences = self.text_processor.tokenize_sentences(text)
         final_sentences = []
 
         for sentence in sentences:
@@ -79,6 +78,6 @@ class Summarizer(object):
                 final_sentences.append(sentence)
 
         return [
-            self.tokenizer.tokenize_words(sentence)
+            self.text_processor.tokenize(sentence)
             for sentence in final_sentences
         ]
