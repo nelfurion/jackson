@@ -37,6 +37,7 @@ class SentenceScorer:
             lem_tuple = (noun, 'n')
             phrase_word_tuples.append(lem_tuple)
 
+
         for i in range(len(tokenized_sentences)):
             if len(tokenized_sentences[i]) > 1:
                 # This is the minimal length for a complete sentence.
@@ -83,9 +84,6 @@ class SentenceScorer:
         scored_sentences = sorted(scored_sentences, key=lambda x: x[2])
         scored_sentences = list(reversed(scored_sentences))
 
-        # print('ORDERED BY SCORE')
-        # print(scored_sentences[0:10])
-
         used_sentences = []
         sentence_tuples = []
         index = 0
@@ -96,13 +94,8 @@ class SentenceScorer:
             sentence_order_in_text = score_tuple[1]
             tokenized_sentence = score_tuple[0]
 
-            # print('-' * 30)
-            # print(tokenized_sentence)
-
             sentence_end = tokenized_sentence[-2] + tokenized_sentence[-1]
-            print(sentence_end)
             full_sentence = ' '.join(tokenized_sentence[0:-2]) + ' ' + sentence_end
-            print('-' * 30)
 
             if full_sentence not in used_sentences:
                 used_sentences.append(full_sentence)
@@ -128,8 +121,6 @@ class SentenceScorer:
             x[2],
             x[1]))
         descending_matches = list(reversed(most_matches))
-        print('TITLES BY MATCHES:')
-        print(descending_matches)
 
         title_scores = sorted(title_scores, key=lambda x: x[1])
         descending_scores = list(reversed(title_scores))
@@ -179,7 +170,6 @@ class SentenceScorer:
         return score, matches
 
     def calculate_words_similarity_score(self, query_words, title_words, part_of_speech):
-        # print('SCORING ', part_of_speech, ' -----')
         matches = 0
         score = 1
         matched_words = set()

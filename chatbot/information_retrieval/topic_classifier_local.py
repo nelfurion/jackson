@@ -43,9 +43,7 @@ class TopicClassifierLocal:
         return result
 
     def _remove_punctuation(self, sentence):
-        print(type(sentence))
         punctuation_exp = '[' + string.punctuation + ']'
-        print(type(punctuation_exp))
         return re.sub(
             punctuation_exp,
             '',

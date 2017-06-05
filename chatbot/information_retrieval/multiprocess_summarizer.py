@@ -16,44 +16,23 @@ class MultiProcessSummarizer(Summarizer):
         self.queue_container = __class__.QueueContainer()
         self.sentence_scorer = sentence_scorer
 
-        print('='*30)
-        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-        print('=' * 30)
-
     def summarize_by_input_frequency(self, sentence_count, articles, nj_phrases):
-        print('Starting multiprocess summarization...')
-
+        print('Starting multiprocess summarization for articles:')
         for article in articles:
             print(article['title'])
 
         self._add_tasks(articles, nj_phrases)
-
-        print(self.queue_container.task_queue)
-
-        print('Lets see how much consumers are there:')
-        print(self.consumers)
         self._load_consumers()
         self._add_poison_pills()
-
         self.queue_container.task_queue.join()
 
-        print(self.queue_container.task_queue)
-
-        print('Joined queue.')
-
         sentences_scores = self._get_sentences_scores(len(articles))
-
-        print(sentences_scores)
 
         best_sentences = self.sentence_scorer.get_best_unique_sentences(sentences_scores, sentence_count)
 
         # Sometimes the consumers continue to live for a time, after everything else is done
         self._join_consumers()
         self.consumers.clear()
-        print('I just cleared the consumers. Lets imagine that i didnt do it.')
-        print(self.consumers)
-
-        print('Joined consumers.')
 
         return best_sentences
 
@@ -76,7 +55,6 @@ class MultiProcessSummarizer(Summarizer):
                 'title': article['title']
             }
 
-            #print('Adding task for page: ', arguments['title'])
             task = self.Task(arguments)
             self.queue_container.task_queue.put(task)
 

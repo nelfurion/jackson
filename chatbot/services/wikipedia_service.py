@@ -10,7 +10,6 @@ class WikipediaService():
 
     ENDPOINT = 'https://en.wikipedia.org/w/api.php?'
     FORMAT = 'json'
-    header_expression = re.compile(wiki_skip.HEADER_PATTERN)
 
     def __init__(self):
         pass
@@ -53,7 +52,7 @@ class WikipediaService():
 
             return full_text
         except IndexError as e:
-            print('WIKI SERVICE: ' + e)
+            print('IndexError: ', e)
             return ''
 
     def get(self, page_title, exintro = False):
@@ -91,41 +90,49 @@ class WikipediaService():
 
         return full_text
 
+    def _find_headers(self, text_lines):
+        header_indexes = []
+        for i in range(len(text_lines)):
+            line = text_lines[i]
+            if len(line) > 0:
+                line_end = line[len(line) - 1]
+                if line[0] == '=' and line_end == '=':
+                    header_indexes.append(i)
+
+        return header_indexes
+
     def _get_text_from_pages(self, pages):
         result_text = ''
         for page_id in pages:
             if 'extract' in pages[page_id].keys():
                 if len(pages[page_id]['extract']) > 0:
                     page_extract = pages[page_id]['extract']
-                    headers = list(self.header_expression.finditer(page_extract))
+                    lines = page_extract.split('\n')
+                    header_indexes = self._find_headers(lines)
 
-                    if len(headers) == 0 or len(headers[0].span()) == 0:
+                    if len(header_indexes) == 0:
                         # Page doesn't have a useful content.
                         continue
 
-                    result_text += self._get_headers_content(headers, page_extract)
+                    result_text += self._get_headers_content(header_indexes, lines)
 
         return result_text
 
-    def _get_headers_content(self, headers, page_extract):
-        result_text = page_extract[0:headers[0].span()[0]]
+    def _get_headers_content(self, header_indexes, page_extract_lines):
+        previous_header_index = header_indexes[0]
+        previous_header = page_extract_lines[previous_header_index]
+        result_lines = page_extract_lines[0:previous_header_index]
+        for i in range(1, len(header_indexes)):
+            if not self._should_skip_header(previous_header):
+                extract_from = previous_header_index + 1
+                extract_until = header_indexes[i]
+                extract_lines = page_extract_lines[extract_from:extract_until]
+                result_lines.extend(extract_lines)
 
-        for i in range(len(headers)):
-            current_header = headers[i]
-            current_paragraph_index = current_header.span()[1] + 1
-            next_header_index = len(page_extract)
+            previous_header_index = header_indexes[i]
+            previous_header = page_extract_lines[previous_header_index]
 
-            if i + 1 < len(headers):
-                next_header = headers[i + 1]
-                next_header_index = next_header.span()[0]
-
-            if not self._should_skip_header(current_header.group(1)):
-                result_text += page_extract[
-                               current_paragraph_index
-                               :
-                               next_header_index]
-
-        return result_text
+        return '\n'.join(result_lines)
 
     def _send_request(self, options):
         try:

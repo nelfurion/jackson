@@ -5,6 +5,7 @@ def tokenize_sentences(tokenizer, text):
     for sentence in sentences:
         last_index = -1
         should_add_sentence = True
+
         for i in range(len(sentence)):
             if sentence[i] == '\n':
                 if last_index == -1:
@@ -13,11 +14,12 @@ def tokenize_sentences(tokenizer, text):
                     last_index = i
                 else:
                     should_add_sentence = False
+                    continue
 
         if should_add_sentence:
             final_sentences.append(sentence)
 
     return [
-        tokenizer.tokenize_words(sentence)
-        for sentence in final_sentences
+            tokenizer.tokenize_words(sentence)
+            for sentence in final_sentences
         ]

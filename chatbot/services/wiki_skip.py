@@ -17,8 +17,6 @@ SUBSTRINGS = [
     'by country',
 ]
 
-HEADER_PATTERN = '(?:\\n)+=+(\s+\w+\s*\(*\s*\w*\)*)+\s+=+'
-
 TITLE_SUBSTRINGS = [
     'disambiguation'
 ]

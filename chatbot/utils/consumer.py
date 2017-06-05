@@ -38,7 +38,6 @@ class Consumer(multiprocessing.Process):
     def get_task(self):
         self.task_lock.acquire()
         next_task = self.task_queue.get()
-        #print(self.name, ' released the task lock |in get()|, with task ', next_task)
         self.task_lock.release()
 
         return next_task
