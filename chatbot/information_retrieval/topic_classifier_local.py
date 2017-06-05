@@ -1,10 +1,13 @@
 import string
 import re
+import multiprocessing
 
 from sklearn.externals import joblib
 from nltk.corpus import stopwords
 
 from .config import config
+
+corpus_lock = multiprocessing.Lock()
 
 class TopicClassifierLocal:
     PUNCTUATIONS = string.punctuation + '?\n'
@@ -21,9 +24,14 @@ class TopicClassifierLocal:
 
         word_stems = []
         for word in tokenized_input:
+
+            # the stopwords corpus needs synchronized requests
+            corpus_lock.acquire()
             if word not in stopwords.words('english') \
                     and word not in TopicClassifierLocal.PUNCTUATIONS:
                 word_stems.append(self.text_processor.stem(word))
+
+            corpus_lock.release()
 
         features_string = ' '.join(word_stems) + ' ' + ' '.join(pos_tags)
         features = self.text_processor.vectorize(features_string)
