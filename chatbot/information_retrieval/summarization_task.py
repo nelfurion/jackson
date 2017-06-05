@@ -52,4 +52,6 @@ class SummarizationTask:
 
             result[i] = new_tuple
 
+        print('Task: finished...')
+
         return result
