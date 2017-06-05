@@ -52,4 +52,11 @@ class SummarizationTask:
 
             result[i] = new_tuple
 
+        result_queue = self.arguments['result_queue']
+        tasks_count = self.arguments['tasks_count']
+        self.arguments['result_lock'].acquire()
+        result_queue.put(result)
+        self.arguments['result_lock'].release()
+        self.arguments['result_callback'](result_queue, tasks_count)
+
         return result
