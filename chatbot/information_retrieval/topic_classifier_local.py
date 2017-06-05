@@ -13,7 +13,7 @@ class TopicClassifierLocal:
         self.text_processor = text_processor
         self.classifier = classifier or joblib.load(config['question_classifier'])
 
-    def classify(self, question):
+    def predict(self, question):
         question = self._remove_punctuation(question)
         tokenized_input = self.text_processor.tokenize(question)
         tagged_words = self.text_processor.get_pos_tags(tokenized_input)
@@ -28,7 +28,11 @@ class TopicClassifierLocal:
         features_string = ' '.join(word_stems) + ' ' + ' '.join(pos_tags)
         features = self.text_processor.vectorize(features_string)
 
-        return self.classifier.predict(features)
+        result = {
+            'topic': self.classifier.predict(features)[0]
+        }
+
+        return result
 
     def _remove_punctuation(self, sentence):
         print(type(sentence))

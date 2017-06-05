@@ -1,5 +1,18 @@
 import sys
 import importlib
+from sklearn.externals import joblib
+
+from information_retrieval.config import config
+from information_retrieval.sentence_scorer import SentenceScorer
+from information_retrieval.phrase_extractor import PhraseExtractor
+from preprocess.text_processor import TextProcessor
+from preprocess.lemmatizer import Lemmatizer
+from preprocess.stemmer import Stemmer
+from preprocess.tokenizer import Tokenizer
+from preprocess.tagged_words_corpus import TaggedWordsCorpus
+
+from information_retrieval.parser import Parser
+
 
 class SummarizationTask:
     def __init__(self, arguments):
@@ -10,7 +23,20 @@ class SummarizationTask:
         if 'preprocess.lemmatizer' in sys.modules:
             importlib.reload(sys.modules['preprocess.lemmatizer'])
 
-        sentence_scorer = self.arguments['sentence_scorer']
+        text_processor = TextProcessor(
+            lemmatizer= Lemmatizer(),
+            parser= Parser.get_instance(),
+            stemmer= Stemmer(),
+            tokenizer= Tokenizer(),
+            vectorizer= joblib.load(config['vectorizer']),
+            tagged_words_corpus= TaggedWordsCorpus()
+        )
+
+        phrase_extractor = PhraseExtractor(text_processor)
+
+        sentence_scorer = SentenceScorer(
+            text_processor=text_processor,
+            phrase_extractor=phrase_extractor)
 
         result = sentence_scorer.score_sentences_by_input_phrases(**self.arguments)
         title_nj_phrases = sentence_scorer.get_title_phrases(self.arguments['title'])

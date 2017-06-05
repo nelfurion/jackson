@@ -12,10 +12,10 @@ print(os.getcwd())
 
 import worker
 from jackson import get_chatbot
-jackson = get_chatbot()
 
 def handle(request):
     if(request.method == 'POST'):
+        jackson = get_chatbot() 
         body_data = json.loads(request.body.decode(encoding='UTF-8'))
         user_input = body_data['user_input']
 

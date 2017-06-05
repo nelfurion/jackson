@@ -137,7 +137,7 @@ class SentenceScorer:
         return descending_scores
 
     def get_title_phrases(self, title):
-        tokenized_title = self.text_processor.tokenize_words(title)
+        tokenized_title = self.text_processor.tokenize(title)
         tree = self.text_processor.parse_to_tree(tokenized_title)
         title_nva = self.phrase_extractor.extract(tree)
 

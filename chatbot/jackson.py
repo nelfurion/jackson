@@ -10,6 +10,7 @@ from information_retrieval.multiprocess_summarizer import MultiProcessSummarizer
 from information_retrieval.summarization_task import SummarizationTask
 from information_retrieval.topic_classifier import TopicClassifier
 from information_retrieval.svo_extractor import SvoExtractor
+from information_retrieval.topic_classifier_local import TopicClassifierLocal
 
 from utils.consumer import Consumer
 
@@ -17,7 +18,7 @@ from services.topic_classification import TopicClassificationService
 from services.summarization_service import SummarizationService
 
 from chatbot.chatbot import Chatbot
-from chatbot.config import config
+from information_retrieval.config import config
 from chatbot.data_manager import DataManager
 
 from preprocess.lemmatizer import Lemmatizer
@@ -34,50 +35,46 @@ stemmer = Stemmer()
 wikipedia_service = WikipediaService()
 neo4j_service = Neo4jService()
 
-topic_classifier = TopicClassifier(TopicClassificationService())
+# topic_classifier = TopicClassifier(TopicClassificationService())
 summarization_service = SummarizationService()
 
 tagged_words_corpus = TaggedWordsCorpus()
 
-
-
+parser = Parser.get_instance()
 
 def get_chatbot():
     lemmatizer = Lemmatizer()
-    parser = Parser.get_instance()
 
     text_processor = TextProcessor(
         tokenizer,
         stemmer,
         joblib.load(config['vectorizer']),
         lemmatizer,
-        parser,
+        Parser.get_instance(),
         tagged_words_corpus)
 
     phrase_extractor = PhraseExtractor(text_processor)
     svo_extractor = SvoExtractor(text_processor, phrase_extractor)
     sentence_scorer = SentenceScorer(text_processor, phrase_extractor)
     entity_extractor = EntityExtractor(text_processor)
+    topic_classifier = TopicClassifierLocal(text_processor)
 
     '''
     summarizer = Summarizer(
-        lemmatizer,
-        tokenizer,
+        text_processor,
         sentence_scorer
     )
     '''
 
     '''
     summarizer = HttpSummarizer(
-        lemmatizer,
-        tokenizer,
+        text_processor,
         sentence_scorer,
         summarization_service)
     '''
 
     summarizer = MultiProcessSummarizer(
-        lemmatizer,
-        tokenizer,
+        text_processor,
         sentence_scorer,
         SummarizationTask,
         Consumer)
@@ -87,7 +84,7 @@ def get_chatbot():
         text_processor,
         neo4j_service,
         wikipedia_service,
-        parser,
+        Parser.get_instance(),
         svo_extractor,
         summarizer)
 

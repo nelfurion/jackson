@@ -1,11 +1,13 @@
 import sys
 import importlib
+import multiprocessing
 
 if 'nltk.stem.wordnet' in sys.modules:
     wn_stem = importlib.reload(sys.modules['nltk.stem.wordnet'])
     WordNetLemmatizer = wn_stem.WordNetLemmatizer
 else:
     import nltk.stem.wordnet as wn_stem
+
     WordNetLemmatizer = wn_stem.WordNetLemmatizer
 
 if 'nltk.corpus' in sys.modules:
@@ -20,16 +22,19 @@ if 'nltk.corpus.reader.wordnet.WordNetError' in sys.modules:
 else:
     from nltk.corpus.reader.wordnet import WordNetError as WordNetError
 
+wn.ensure_loaded()
+lock = multiprocessing.Lock()
+
+
 class Lemmatizer():
     ERROR_FORMAT = 'ERROR in Lemmatizer: {error}, returning {value}'
     LEMMA_KEY_FORMAT = '{word}.{part_of_speech}'
     SYNSET_KEY_FORMAT = '{lemma}.{part_of_speech}.01'
 
     def __init__(self):
-        #Ensuring that the wordnet corpus is loaded, so we can support multithreading
-        wn.ensure_loaded()
-
+        lock.acquire()
         self.lemmatizer = wn_stem.WordNetLemmatizer()
+        lock.release()
         self.lemmas_dict = {}
         self.synsets_dict = {}
         self.similarity_dict = {}
@@ -37,7 +42,7 @@ class Lemmatizer():
     def get_lemmas(self, word, part_of_speech):
         try:
             part_of_speech = self._translate_part_of_speech(part_of_speech)
-            synset = wn.synset(word+ '.' + part_of_speech + '.01')
+            synset = wn.synset(word + '.' + part_of_speech + '.01')
 
             if not synset:
                 return []
@@ -49,22 +54,31 @@ class Lemmatizer():
     def lemmatize(self, word, part_of_speech):
         try:
             part_of_speech = self._translate_part_of_speech(part_of_speech)
+            lock.acquire()
             lemmas = self.lemmatizer.lemmatize(word, part_of_speech)
+            lock.release()
             return lemmas
         except WordNetError:
             return word
 
     def get_synonyms(self, word, part_of_speech, threshold):
         try:
+            lock.acquire()
+
             lemma = self.lemmatizer.lemmatize(word, part_of_speech)
             default_synset = wn.synset(lemma + '.' + part_of_speech + '.01')
             synsets = wn.synsets(lemma)
+
+            lock.release()
+
             synonyms = []
 
             for synset in synsets:
+                lock.acquire()
                 path_similarity = synset.path_similarity(default_synset)
-                if path_similarity\
-                        and path_similarity >= threshold\
+                lock.release()
+                if path_similarity \
+                        and path_similarity >= threshold \
                         and synset.pos() == part_of_speech:
                     synset_name = synset.name().split('.')[0]
                     synonyms.append(synset_name)

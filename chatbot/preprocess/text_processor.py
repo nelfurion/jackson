@@ -30,8 +30,8 @@ class TextProcessor:
     def get_synonyms(self, word, function, threshold):
         return self.lemmatizer.get_synonyms(word, function, threshold)
 
-    def get_word_similarity(self, first, first_function, second, second_function):
-        return self.lemmatizer.get_word_similarity(first, first_function, second, second_function)
+    def get_word_similarity(self, first, second, wn_pos):
+        return self.lemmatizer.get_similarity(first, second, wn_pos)
 
     def get_pos_tags(self, tokenized_sentence):
         return nltk.pos_tag(tokenized_sentence)

@@ -16,6 +16,10 @@ class MultiProcessSummarizer(Summarizer):
         self.queue_container = __class__.QueueContainer()
         self.sentence_scorer = sentence_scorer
 
+        print('='*30)
+        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+        print('=' * 30)
+
     def summarize_by_input_frequency(self, sentence_count, articles, nj_phrases):
         print('Starting multiprocess summarization...')
 
@@ -26,6 +30,8 @@ class MultiProcessSummarizer(Summarizer):
 
         print(self.queue_container.task_queue)
 
+        print('Lets see how much consumers are there:')
+        print(self.consumers)
         self._load_consumers()
         self._add_poison_pills()
 
@@ -43,6 +49,9 @@ class MultiProcessSummarizer(Summarizer):
 
         # Sometimes the consumers continue to live for a time, after everything else is done
         self._join_consumers()
+        self.consumers.clear()
+        print('I just cleared the consumers. Lets imagine that i didnt do it.')
+        print(self.consumers)
 
         print('Joined consumers.')
 
@@ -62,7 +71,6 @@ class MultiProcessSummarizer(Summarizer):
     def _add_tasks(self, articles, nj_phrases):
         for article in articles:
             arguments = {
-                'sentence_scorer': self.sentence_scorer,
                 'nj_phrases': nj_phrases,
                 'text': article['text'],
                 'title': article['title']
