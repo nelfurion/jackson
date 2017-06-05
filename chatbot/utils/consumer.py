@@ -18,7 +18,7 @@ class Consumer(multiprocessing.Process):
 
             #    break
 
-            result = next_task()
+            result = next_task['func'](**next_task['args'])
 
             self.signal_task_finished()
 

@@ -1,5 +1,6 @@
 import sys
 import importlib
+import multiprocessing
 from sklearn.externals import joblib
 
 from information_retrieval.config import config
@@ -13,6 +14,7 @@ from preprocess.tagged_words_corpus import TaggedWordsCorpus
 
 from information_retrieval.parser import Parser
 
+lock = multiprocessing.Lock()
 
 class SummarizationTask:
     def __init__(self, arguments):
@@ -54,9 +56,9 @@ class SummarizationTask:
 
         result_queue = self.arguments['result_queue']
         tasks_count = self.arguments['tasks_count']
-        self.arguments['result_lock'].acquire()
+        lock.acquire()
         result_queue.put(result)
-        self.arguments['result_lock'].release()
+        lock.release()
         self.arguments['result_callback'](result_queue, tasks_count)
 
         return result

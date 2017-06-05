@@ -16,6 +16,7 @@ class MultiProcessSummarizer(Summarizer):
         super().__init__(text_processor, sentence_scorer, min_freq, max_freq)
 
         self.consumers = []
+        self._tasks_count = 0
         self.max_consumer_count = multiprocessing.cpu_count()
         self.Task = Task
         self.Consumer = Consumer
@@ -32,11 +33,7 @@ class MultiProcessSummarizer(Summarizer):
         self._tasks_count = len(articles)
         self._add_tasks(
             articles,
-            nj_phrases,
-            self.queue_container.result_lock,
-            self.queue_container.result_queue,
-            result_callback,
-            self.queue_container.return_lock)
+            nj_phrases)
 
         if len(CONSUMERS) < CONSUMERS_COUNT:
             self._load_consumers()
@@ -71,20 +68,18 @@ class MultiProcessSummarizer(Summarizer):
 
         return sentences_scores
 
-    def _add_tasks(self, articles, nj_phrases, result_lock, result_queue, result_callback, return_lock):
+    def _add_tasks(self, articles, nj_phrases):
         for article in articles:
             arguments = {
-                'result_lock': result_lock,
-                'result_queue': result_queue,
-                'return_lock': return_lock,
-                'tasks_count': len(articles),
                 'nj_phrases': nj_phrases,
                 'text': article['text'],
                 'title': article['title']
             }
 
-            task = self.Task(arguments)
-            self.queue_container.task_queue.put(task)
+            self.queue_container.task_queue.put({
+                'func': self.summarize_task,
+                'args': arguments
+            })
 
             print('Added tasks')
 
@@ -117,6 +112,29 @@ class MultiProcessSummarizer(Summarizer):
         for consumer in self.consumers:
             self.queue_container.task_queue.put(__class__.POISON_PILL)
 
+    def summarize_task(self, arguments):
+        result = self.sentence_scorer.score_sentences_by_input_phrases(**arguments)
+        title_nj_phrases = self.sentence_scorer.get_title_phrases(arguments['title'])
+        title_score_and_matches = self.sentence_scorer.score_title(title_nj_phrases, arguments['nj_phrases'])
+        title_score = title_score_and_matches[0]
+
+        for i in range(len(result)):
+            old_tuple = result[i]
+            new_tuple = (
+                old_tuple[0],
+                old_tuple[1],
+                old_tuple[2] + title_score)
+
+            result[i] = new_tuple
+
+        self.queue_container.result_lock.acquire()
+        self.queue_container.result_queue.put(result)
+        if self.queue_container.result_queue.qsize() >= self._tasks_count:
+            self.queue_container.return_lock.release()
+        self.queue_container.result_lock.release()
+
+        return result
+
     class QueueContainer:
         def __init__(self):
             # The consumers are able to get tasks from the queue simultaneously
@@ -128,7 +146,3 @@ class MultiProcessSummarizer(Summarizer):
             self.result_lock = multiprocessing.Lock()
             self.task_queue = multiprocessing.JoinableQueue()
             self.result_queue = multiprocessing.Queue()
-
-def result_callback(result_queue, tasks_count):
-    if result_queue.qsize() >= tasks_count:
-        RESULT_QUEUES[result_queue].release()
