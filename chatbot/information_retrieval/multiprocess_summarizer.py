@@ -10,7 +10,7 @@ class MultiProcessSummarizer(Summarizer):
         super().__init__(text_processor, sentence_scorer, min_freq, max_freq)
 
         self.consumers = []
-        self.max_consumer_count = multiprocessing.cpu_count()
+        self.max_consumer_count = multiprocessing.cpu_count() - 1
         self.Task = Task
         self.Consumer = Consumer
         self.queue_container = __class__.QueueContainer()
