@@ -1,6 +1,6 @@
 django==1.10.4
 scikit-learn==0.18.1
-numpy==1.11.1
+numpy==1.21.0
 scipy==0.18.1
 nltk==3.2.1
 neo4jrestclient==2.1.1
